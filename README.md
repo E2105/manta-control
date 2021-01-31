@@ -83,3 +83,9 @@ git clone
 catkin build
 
 ## Test functionality
+
+## Camera node
+
+I'm using the default usb_cam node from ROS with a few modifications.
+
+New launch file with correct aspect ratio and len/wid.
