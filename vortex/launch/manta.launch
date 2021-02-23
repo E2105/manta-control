@@ -1,5 +1,8 @@
 <launch>
 
+  <!-- Comment template -->
+
+  <!-- Comment template -->
   <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch"/>
 
   <env name="ROSCONSOLE_FORMAT" value="[${severity}] [${time}] [${node}]: ${message}" />
