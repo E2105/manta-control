@@ -3,6 +3,7 @@
 from math import isnan, isinf
 from numpy import interp
 import rospy
+import numpy as np
 
 from vortex_msgs.msg import ThrusterForces, Pwm
 
