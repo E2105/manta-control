@@ -1,6 +1,15 @@
-# Mantabantalanta
+# Manta Control System
 
-Test: Is this the ROV-USV repo?
+**actuators**: lights and camera servo
+**allocator**: allocates to thrusters
+**camera**: raw camera feed
+**controller**: controlling regulator
+**estimator**: state estimation
+**framework**: config and launch files
+**joystick**: custom joystick mapping
+**pwm**: sends PWM to board
+**sensors**: raw data from pressure sensor and IMU
+**thrusters**: converts joystick signals to needed forces
 
 Will add a customized UUV simulator later.
 
