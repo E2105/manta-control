@@ -308,6 +308,12 @@ Git
 sudo apt install git
 ```
 
+Camera
+
+```
+sudo apt-get install ros-noetic-image-transport ros-noetic-camera-info-manager libavcodec-dev libswscale-dev
+```
+
 Other
 
 ```
