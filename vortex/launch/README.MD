@@ -14,7 +14,7 @@ roslaunch package_name launch_file.launch
 
 ## Relevant files
 
-### pwmtest.launch
+### physical_test.launch
 
 This activates the whole control system with functioning control of physical thrusters. This can only be run on the actual Raspberry Pi 4 because of the I2C dependencies.
 
