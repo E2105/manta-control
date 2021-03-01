@@ -18,5 +18,5 @@
   
   <node pkg="pwm_interface"    name="pwm_interface"    type="pca9685_interface.py" output="screen" respawn="true"/>
 
-  <!--<include file="$(find joystick_interface)/launch/joystick_interface.launch" />-->
+  <include file="$(find joystick_interface)/launch/joystick_interface.launch" />
 </launch>
