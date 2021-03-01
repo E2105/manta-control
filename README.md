@@ -314,6 +314,18 @@ Camera
 sudo apt-get install ros-noetic-image-transport ros-noetic-camera-info-manager libavcodec-dev libswscale-dev
 ```
 
+... Video4Linux utilities
+
+```
+sudo apt-get install v4l-utils
+```
+
+Viewing the image (When this is installed image_raw topic is shown as video instead of numbers automatically)
+
+```
+sudo apt-get install ros-noetic-image-view
+```
+
 Other
 
 ```
