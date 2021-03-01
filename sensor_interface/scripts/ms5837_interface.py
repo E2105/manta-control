@@ -9,25 +9,21 @@ from sensor_msgs.msg import FluidPressure, Temperature
 class Ms5837InterfaceNode(object):
     def __init__(self):
         rospy.init_node('pressure_node')
-
-        self.pub_pressure = rospy.Publisher(
-            'sensors/pressure',
-            FluidPressure,
-            queue_size=1)
-
-        self.pub_temp = rospy.Publisher(
-            'sensors/temperature',
-            Temperature,
-            queue_size=1)
-
         self.ms5837 = ms5837.MS5837(model=ms5837.MODEL_30BA)
+        self.pub_pressure = rospy.Publisher('sensors/pressure',
+                                            FluidPressure,
+                                            queue_size=1)
+        self.pub_temp = rospy.Publisher('sensors/temperature',
+                                        Temperature,
+                                        queue_size=1)
+
         if not self.ms5837.init():
-            rospy.logfatal('Failed to initialise MS5837! Is the sensor connected?')
+            rospy.logfatal('Failed to initialize pressure sensor. Check the connection.')
         else:
             if not self.ms5837.read():
-                rospy.logfatal('Failed to read MS5837!')
+                rospy.logfatal('Failed to read from pressure sensor.')
             else:
-                rospy.loginfo('Successfully initialised MS5837')
+                rospy.loginfo('Successfully initialized pressure sensor.')
         self.talker()
 
     def talker(self):
@@ -47,7 +43,7 @@ class Ms5837InterfaceNode(object):
                 self.pub_pressure.publish(pressure_msg)
                 self.pub_temp.publish(temp_msg)
             else:
-                rospy.roswarn('Failed to read pressure sensor!')
+                rospy.roswarn('Failed to read from pressure sensor.')
 
             rospy.Rate(10).sleep()
 
