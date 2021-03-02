@@ -11,17 +11,18 @@ FREQUENCY_MEASURED = 51.6 #rospy.get_param('/pwm/frequency/measured')
 PERIOD_LENGTH_IN_MICROSECONDS = 1000000.0 / FREQUENCY_MEASURED
 PWM_ON = 0  # Start of duty cycle
 
-
 class Pca9685InterfaceNode(object):
     def __init__(self):
         rospy.init_node('pwm_node')
         self.sub = rospy.Subscriber('pwm', Pwm, self.callback, queue_size=1)
-        self.sub_tilt = rospy.Subscriber('manipulator', Manipulator, self.callback, queue_size=1) # servo
+        self.sub2 = rospy.Subscriber(
+            'manipulator_command', Manipulator, self.callback_tilt) # servo
 
         self.pca9685 = Adafruit_PCA9685.PCA9685()
         self.pca9685.set_pwm_freq(FREQUENCY)
         self.pca9685.set_all_pwm(0, 0)
         self.current_pwm = [0]*16
+        self.camera_pwm = 1500
 
         rospy.on_shutdown(self.shutdown)
 
@@ -29,7 +30,6 @@ class Pca9685InterfaceNode(object):
 
     def callback(self, msg):
         # servo value
-        camera_pwm = 1500
 
         if len(msg.pins) == len(msg.positive_width_us):
             for i in range(len(msg.pins)):
@@ -40,14 +40,15 @@ class Pca9685InterfaceNode(object):
         print(msg.positive_width_us) #troubleshooting
         print(msg.pins)              #troubleshooting
 
+    def callback_tilt(self, msg):
         # Trying out the tilt control
         servo_tilt = msg.vertical_stepper_direction
         if servo_tilt == 1:
-            camera_pwm += 10
+            self.camera_pwm += 5
         elif servo_tilt == -1:
-            camera_pwm -= 10
+            self.camera_pwm -= 5
 
-        self.current_pwm[msg.pins[8]] = camera_pwm
+        self.pca9685.set_pwm(8, PWM_ON, self.microsecs_to_bits(self.camera_pwm))
             
 
 
