@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 import rospy
 from vortex_msgs.msg import PropulsionCommand, Manipulator
 from sensor_msgs.msg import Joy
@@ -36,7 +37,6 @@ class XboxNode(object):
         buttons = {}
         axes = {}
 
-        # WHY A FOR LOOP, NEED TO DOUBLE CHECK THIS CALLBACK
         for i in range(len(msg.buttons)):
             buttons[self.buttons_map[i]] = msg.buttons[i]
 
