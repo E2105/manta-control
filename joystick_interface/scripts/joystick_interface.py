@@ -8,14 +8,15 @@ class JoystickInterfaceNode(object):
     def __init__(self):
         rospy.init_node('joystick_node')
 
-        self.sub = rospy.Subscriber(
-            'joy_throttle', Joy, self.callback, queue_size=1)
-        self.pub_motion = rospy.Publisher('propulsion_command',
-                                          PropulsionCommand,
-                                          queue_size=1)
-        self.pub_manipulator = rospy.Publisher('manipulator_command',
-                                               Manipulator,
-                                               queue_size=1)
+        # Input configuration
+        #   joy_throttle is a default throttle mechanic within joy
+        self.sub = rospy.Subscriber('joy_throttle', Joy, self.callback, queue_size=1)
+
+        # Output configuration
+        #   Propulsion: float64[6] motion, bool[] control_mode
+        #   Manipulator: int8 claw-direction, int8 vertical_stepper_direction
+        self.pub_motion = rospy.Publisher('propulsion_command', PropulsionCommand, queue_size=1)
+        self.pub_manipulator = rospy.Publisher('manipulator_command', Manipulator, queue_size=1)
 
         # Name buttons and axes based on index from joy-node
         self.buttons_map = ['A', 'B', 'X', 'Y', 'LB', 'RB', 'back',
