@@ -1,0 +1,25 @@
+# BlueRobotics T200 Thruster Parameters
+# -------------------------------------
+
+# Website: https://bluerobotics.com/store/thrusters/t100-t200-thrusters/t200-thruster-r2-rp/
+
+# Thruster info:
+#   Reverse: 1100-1500 us
+#   Forward: 1500-1900 us
+#   Tests run on BlueRobotics Basic ESC R3.
+#   PWM input and RPM has no direct relationship.
+#   All data is based on a 14V source.
+
+
+# Thrust vs PWM signal
+
+thrusters:
+  rate_of_change:
+    max: 1 # Maximum rate of change in newton per second for a thruster
+  characteristics:
+    pulse_width: []
+    thrust: []
+    current_draw: []
+    power: []
+    force: []
+    efficiency: []

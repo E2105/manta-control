@@ -22,13 +22,13 @@ class JoystickInterfaceNode():
         self.sub = rospy.Subscriber('joy_throttle', Joy, self.callback, queue_size=1)
 
         # Motion data
-        self.pub_motion = rospy.Publisher('twist_motion', Twist, queue_size=1)
+        self.pub_motion = rospy.Publisher('joy/twist_motion', Twist, queue_size=1)
 
         # Control modes
-        self.pub_mode = rospy.Publisher('control_mode', ByteMultiArray, queue_size=1)
+        self.pub_mode = rospy.Publisher('joy/control_mode', ByteMultiArray, queue_size=1)
 
         # DPAD
-        self.pub_dpad = rospy.Publisher('dpad', Int8MultiArray, queue_size=1)
+        self.pub_dpad = rospy.Publisher('joy/dpad', Int8MultiArray, queue_size=1)
 
 
         # Input Mapping

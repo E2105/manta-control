@@ -74,4 +74,4 @@ controller:
   attitude_gain: 2.5
   velocity_gain: 0.4
 
-computer: 'odroid'
+computer: 'pi'

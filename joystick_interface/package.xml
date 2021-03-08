@@ -3,10 +3,9 @@
 
   <name>joystick_interface</name>
   <version>0.1.0</version>
-  <description>Get joystick signals from topside, multiplex to channels.</description>
-  <maintainer email="morten.fyhn.amundsen@gmail.com">Morten Fyhn Amundsen</maintainer>
+  <description>Remapping joystick input</description>
+  <maintainer email="borgepahlm@gmail.com">Børge Pahlm</maintainer>
   <license>MIT</license>
-  <url type="website">http://vortexntnu.no/</url>
 
   <buildtool_depend>catkin</buildtool_depend>
 
