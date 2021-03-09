@@ -13,6 +13,19 @@
 
 Controller::Controller(ros::NodeHandle nh) : m_nh(nh), m_frequency(10)
 {
+  // propulsion_command:
+  //    float64[6]
+  //    bool[]
+  // New propulsion
+  //    twist linear & angular
+  //    byte array
+  // state_estimate
+  //    geometry_msgs/Pose pose
+  //    geometry_msgs/Twist twist
+  // New odometry
+  //    geometry_msgs/PoseWithCovariance pose
+  //    geometry_msgs/TwistWithCovariance twist
+  
   m_command_sub = m_nh.subscribe("propulsion_command", 1, &Controller::commandCallback, this);
   m_state_sub   = m_nh.subscribe("state_estimate", 1, &Controller::stateCallback, this);
   m_wrench_pub  = m_nh.advertise<geometry_msgs::Wrench>("controller/forces", 1);
