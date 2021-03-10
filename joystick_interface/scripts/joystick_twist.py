@@ -27,7 +27,7 @@ class JoystickInterfaceNode():
         # Control modes
         self.pub_mode = rospy.Publisher('joy/control_mode', ByteMultiArray, queue_size=1)
 
-        # DPAD
+        # D-PAD
         self.pub_dpad = rospy.Publisher('joy/dpad', Int8MultiArray, queue_size=1)
 
 
@@ -64,7 +64,6 @@ class JoystickInterfaceNode():
         for j in range(len(msg.buttons)):
             button_array[self.buttons_map[j]] = msg.buttons[j]
 
-
         # Motion Controls
         # ---------------
 
@@ -100,7 +99,6 @@ class JoystickInterfaceNode():
             twist_motion['dpad_horizontal'],
             twist_motion['dpad_vertical']
         ]
-
 
         # Publishing topics
         self.pub_motion.publish(twist)
