@@ -140,7 +140,8 @@ class MS5837(object):
         elif conversion == UNITS_Kelvin:
             return degC - 273
         return degC
-
+    
+    #TODO: Blir beregnet i estimator. Vurder å fjerne en beregning.  
     # Depth relative to MSL pressure in given fluid density
     def depth(self):
         return (self.pressure(UNITS_Pa)-101300)/(self._fluidDensity*9.80665)
