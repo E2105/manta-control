@@ -9,7 +9,7 @@ SimpleEstimator::SimpleEstimator()
 {
   m_imu_sub      = m_nh.subscribe("/sensors/imu/data", 1, &SimpleEstimator::imuCallback, this);
   m_pressure_sub = m_nh.subscribe("/sensors/pressure", 1, &SimpleEstimator::pressureCallback, this);
-  m_state_pub    = m_nh.advertise<vortex_msgs::RovState>("state_estimate", 1);
+  m_state_pub    = m_nh.advertise<nav_msgs::Odometry>("state_estimate", 1);
 
   if (!m_nh.getParam("atmosphere/pressure", m_atmospheric_pressure))
     ROS_ERROR("Could not read parameter atmospheric pressure.");

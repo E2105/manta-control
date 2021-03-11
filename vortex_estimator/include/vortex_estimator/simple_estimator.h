@@ -9,7 +9,7 @@
 #include "ros/ros.h"
 #include "sensor_msgs/Imu.h"
 #include "sensor_msgs/FluidPressure.h"
-#include "vortex_msgs/RovState.h"
+#include "nav_msgs/Odometry.h"
 
 class SimpleEstimator
 {
@@ -30,7 +30,7 @@ class SimpleEstimator
 
     const double c_pi = 3.141592653589793;
 
-    vortex_msgs::RovState m_state;
+    nav_msgs::Odometry m_state;
 };
 
 #endif  // VORTEX_ESTIMATOR_SIMPLE_ESTIMATOR_H
