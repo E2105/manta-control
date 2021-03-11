@@ -34,8 +34,8 @@ class ThrusterInterface(object):
         rospy.init_node('thruster_interface', anonymous=False, log_level=rospy.INFO)
 
         # Topics
-        self.sub = rospy.Subscriber('thruster_forces', ThrusterForces, self.callback)
-        #self.sub = rospy.Subscriber('thruster_forces', Float64MultiArray, self.callback)
+        #self.sub = rospy.Subscriber('thruster_forces', ThrusterForces, self.callback)
+        self.sub = rospy.Subscriber('thruster_forces', Float64MultiArray, self.callback)
         self.pub_pwm = rospy.Publisher('pwm_values', UInt16MultiArray, queue_size=10)
 
         # Startup/Shutdown

@@ -13,7 +13,7 @@ enum ControlMode
   DEPTH_HEADING_HOLD  = 3,
   OPEN_LOOP_RESTORING = 4,
   STAY_LEVEL          = 5,
-  CONTROL_MODE_END    = 6
+  CONTROL_MODE_END    = 4                                   // STANDARDIZATION, CHANGED TO 4 FROM 6
 };
 }  // namespace ControlModes
 typedef ControlModes::ControlMode ControlMode;

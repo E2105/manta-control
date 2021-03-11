@@ -84,7 +84,6 @@ void Allocator::callback(const geometry_msgs::Wrench &msg_in) const
   for (int i = 0; i < m_num_thrusters; i++)
     msg_out.data[i] *= m_direction[i];                  // I was here       
 
-  msg_out.header.stamp = ros::Time::now();
   m_pub.publish(msg_out);
 }
 

@@ -17,5 +17,5 @@
   <node pkg="vortex_allocator"           type="node"                       name="allocator"          output="screen"/>
   <node pkg="vortex_estimator"           type="node"                       name="estimator"          output="screen"/>
 
-  <include file="$(find joystick_interface)/launch/joystick_interface.launch" />
+  <include file="$(find joystick_interface)/launch/joystick_twist.launch" />
 </launch>

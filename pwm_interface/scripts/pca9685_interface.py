@@ -4,6 +4,17 @@ import rospy
 from vortex_msgs.msg import Pwm, Manipulator
 import Adafruit_PCA9685
 
+"""
+This node writes PWM signals to the GPIO pins on a ADAFRUIT PCA9685 PWM board.
+
+Pin 0 - 7
+    Connected to two 4-in-1 ESCs controlling 8 thrusters.
+Pin 8
+    Controls the camera servo allowing for tilt control.
+Pin 9
+    Controls the brightness of the lights.
+"""
+
 # Constants
 PWM_BITS_PER_PERIOD = 4095 #rospy.get_param('/pwm/counter/max')
 FREQUENCY = 50.0 #rospy.get_param('/pwm/frequency/set')

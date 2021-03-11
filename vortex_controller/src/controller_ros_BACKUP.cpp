@@ -1,4 +1,4 @@
-#include "vortex_controller/controller_ros_standardized.h"
+#include "vortex_controller/controller_ros.h"
 
 #include "vortex/eigen_helper.h"
 #include <tf/transform_datatypes.h>
@@ -11,32 +11,23 @@
 #include <string>
 #include <vector>
 
-// ADDING THE NEW STANDARDIZED MESSAGE TYPE
-#include "geometry_msgs/Twist.h"
-#include "std_msgs/ByteMultiArray.h"
-
 Controller::Controller(ros::NodeHandle nh) : m_nh(nh), m_frequency(10)
 {
-  
-  //m_command_sub = m_nh.subscribe("propulsion_command", 1, &Controller::commandCallback, this);    // vortex_msgs
-  m_command_sub = m_nh.subscribe("joy/twist_motion", 1, &Controller::commandCallback, this);
-  m_mode_sub    = m_nh.subscribe("joy/control_mode", 1, &Controller::modeCallback, this);           // Make a new callback
-
+  m_command_sub = m_nh.subscribe("propulsion_command", 1, &Controller::commandCallback, this);
   m_state_sub   = m_nh.subscribe("state_estimate", 1, &Controller::stateCallback, this);
-  m_wrench_pub  = m_nh.advertise<geometry_msgs::Wrench>("controller/forces", 1);
+  m_wrench_pub  = m_nh.advertise<geometry_msgs::Wrench>("rov_forces", 1);
   m_mode_pub    = m_nh.advertise<std_msgs::String>("controller/mode", 10);
-  m_debug_pub   = m_nh.advertise<vortex_msgs::Debug>("debug/controlstates", 10);                    // letting it be for now, just for debugging
+  m_debug_pub   = m_nh.advertise<vortex_msgs::Debug>("debug/controlstates", 10);
 
   m_control_mode = ControlModes::OPEN_LOOP;
 
   if (!m_nh.getParam("/controller/frequency", m_frequency))
-    ROS_WARN("Failed to read parameter: /controller/frequency. Using default frequency: %i Hz.", m_frequency);
-
+    ROS_WARN("Failed to read parameter controller frequency, defaulting to %i Hz.", m_frequency);
   std::string s;
   if (!m_nh.getParam("/computer", s))
   {
     s = "pc-debug";
-    ROS_WARN("Failed to read parameter: /computer");
+    ROS_WARN("Failed to read parameter computer");
   }
   if (s == "pc-debug")
     m_debug_mode = true;
@@ -53,12 +44,11 @@ Controller::Controller(ros::NodeHandle nh) : m_nh(nh), m_frequency(10)
   ROS_INFO("Initialized at %i Hz.", m_frequency);
 }
 
-void Controller::commandCallback(const geometry_msgs::Twist& msg) // CHANGED from prop
+void Controller::commandCallback(const vortex_msgs::PropulsionCommand& msg)
 {
-  if (!healthyMotionMessage(msg)) //MotionMessage OK
+  if (!healthyMessage(msg))
     return;
 
-  /* Only doing this in the mode callback
   ControlMode new_control_mode = getControlMode(msg);
   if (new_control_mode != m_control_mode)
   {
@@ -67,53 +57,19 @@ void Controller::commandCallback(const geometry_msgs::Twist& msg) // CHANGED fro
     ROS_INFO_STREAM("Changing mode to " << controlModeString(m_control_mode) << ".");
   }
   publishControlMode();
-  */
 
-  /* Changed to the one beneath
   Eigen::Vector6d command;
   for (int i = 0; i < 6; ++i)
     command(i) = msg.motion[i];
   m_setpoints->update(command);
-  */
-
-  Eigen::Vector6d command;
-  command(0) = msg.linear.x;
-  command(1) = msg.linear.y;
-  command(2) = msg.linear.z;
-  command(3) = msg.angular.x;
-  command(4) = msg.angular.y;
-  command(5) = msg.angular.z;
-  m_setpoints->update(command);
 }
 
-
-
-void Controller::modeCallback(const std_msgs::ByteMultiArray& msg)
+ControlMode Controller::getControlMode(const vortex_msgs::PropulsionCommand& msg) const
 {
-  // NEW CALLBACK FOR BYTE ARRAY DECIDING CONTROL MODE
-  if (!healthyModeMessage(msg)) //ModeMEssage OK
-    return;
-
-  ControlMode new_control_mode = getControlMode(msg); // OK?
-  if (new_control_mode != m_control_mode)
-  {
-    m_control_mode = new_control_mode;
-    resetSetpoints();
-    ROS_INFO_STREAM("Changing mode to " << controlModeString(m_control_mode) << ".");
-  }
-  publishControlMode();
-}
-
-
-
-
-ControlMode Controller::getControlMode(const std_msgs::ByteMultiArray& msg) const // CHANGED from prop
-{
-  // changed control_mode to data
   ControlMode new_control_mode = m_control_mode;
-  for (unsigned i = 0; i < msg.data.size(); ++i)
+  for (unsigned i = 0; i < msg.control_mode.size(); ++i)
   {
-    if (msg.data[i])
+    if (msg.control_mode[i])
     {
       new_control_mode = static_cast<ControlMode>(i);
       break;
@@ -339,63 +295,30 @@ void Controller::initPositionHoldController()
   m_controller.reset(new QuaternionPdController(a, b, c, W, B, r_G, r_B));
 }
 
-bool Controller::healthyMotionMessage(const geometry_msgs::Twist& msg) // CHANGED from prop
+bool Controller::healthyMessage(const vortex_msgs::PropulsionCommand& msg)
 {
   // Check that motion commands are in range
-
-  // renamed to healthyMotionMessage and split in two
-  // CHANGED OUT A FOR LOOP FOR 6 IF STATEMENTS - MAKE A LOOP
-  // LINEAR MOTION
-  if (msg.linear.x > 1 || msg.linear.x < -1)
-    {
-      ROS_WARN("Surge command out of range, ignoring message...");
-      return false;
-    }
-  if (msg.linear.y > 1 || msg.linear.y < -1)
-    {
-      ROS_WARN("Sway command out of range, ignoring message...");
-      return false;
-    }
-  if (msg.linear.z > 1 || msg.linear.z < -1)
-    {
-      ROS_WARN("Heave command out of range, ignoring message...");
-      return false;
-    }
-  // ANGULAR MOTION
-  if (msg.angular.x > 1 || msg.angular.x < -1)
-    {
-      ROS_WARN("Roll command out of range, ignoring message...");
-      return false;
-    }
-  if (msg.angular.y > 1 || msg.angular.y < -1)
-    {
-      ROS_WARN("Pitch command out of range, ignoring message...");
-      return false;
-    }
-  if (msg.angular.z > 1 || msg.angular.z < -1)
-    {
-      ROS_WARN("Yaw command out of range, ignoring message...");
-      return false;
-    }
-  return true;
-}
-  
-bool Controller::healthyModeMessage(const std_msgs::ByteMultiArray& msg)
-{
-  // Check correct length of control mode vector
-
-  //Change out control_mode with data, and message type in
-  if (msg.data.size() != ControlModes::CONTROL_MODE_END)
+  for (int i = 0; i < msg.motion.size(); ++i)
   {
-    ROS_WARN_STREAM_THROTTLE(1, "Control mode vector has " << msg.data.size()
+    if (msg.motion[i] > 1 || msg.motion[i] < -1)
+    {
+      ROS_WARN("Motion command out of range, ignoring message...");
+      return false;
+    }
+  }
+
+  // Check correct length of control mode vector
+  if (msg.control_mode.size() != ControlModes::CONTROL_MODE_END)
+  {
+    ROS_WARN_STREAM_THROTTLE(1, "Control mode vector has " << msg.control_mode.size()
       << " element(s), should have " << ControlModes::CONTROL_MODE_END);
     return false;
   }
 
   // Check that exactly zero or one control mode is requested
   int num_requested_modes = 0;
-  for (int i = 0; i < msg.data.size(); ++i)
-    if (msg.data[i])
+  for (int i = 0; i < msg.control_mode.size(); ++i)
+    if (msg.control_mode[i])
       num_requested_modes++;
   if (num_requested_modes > 1)
   {
