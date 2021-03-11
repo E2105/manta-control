@@ -15,8 +15,9 @@ Allocator::Allocator(ros::NodeHandle nh)
   m_min_thrust(-std::numeric_limits<double>::infinity()),
   m_max_thrust(std::numeric_limits<double>::infinity())
 {
-  m_sub = m_nh.subscribe("rov_forces", 1, &Allocator::callback, this);
-  m_pub = m_nh.advertise<vortex_msgs::ThrusterForces>("thruster_forces", 1);
+  m_sub = m_nh.subscribe("rov_forces", 1, &Allocator::callback, this);        // Standard wrench message
+  //m_pub = m_nh.advertise<vortex_msgs::ThrusterForces>("thruster_forces", 1);  // Change out for float64[]
+  m_pub = m_nh.advertise<std_msgs::Float64MultiArray>("thruster_forces", 1);
 
   if (!m_nh.getParam("/propulsion/dofs/num", m_num_degrees_of_freedom))
     ROS_FATAL("Failed to read parameter number of dofs.");
@@ -81,7 +82,7 @@ void Allocator::callback(const geometry_msgs::Wrench &msg_in) const
   arrayEigenToMsg(thruster_forces, &msg_out);
 
   for (int i = 0; i < m_num_thrusters; i++)
-    msg_out.thrust[i] *= m_direction[i];
+    msg_out.data[i] *= m_direction[i];                                          // HERE
 
   msg_out.header.stamp = ros::Time::now();
   m_pub.publish(msg_out);
