@@ -57,7 +57,7 @@ class ThrusterInterface(object):
             return
 
         # Initializing
-        thrust = list(msg.thrust)                      # Topic: "thruster_forces"
+        thrust = list(msg.data)                      # Topic: "thruster_forces"
         pwm_values = UInt16MultiArray()                     # Topic: "pwm_values"
 
         microsecs = [None] * NUM_THRUSTERS
@@ -87,11 +87,11 @@ class ThrusterInterface(object):
 
 
     def healthy_message(self, msg):
-        if len(msg.thrust) != NUM_THRUSTERS:
+        if len(msg.data) != NUM_THRUSTERS:
             rospy.logwarn_throttle(10, 'Wrong number of thrusters, ignoring...')
             return False
 
-        for t in msg.thrust:
+        for t in msg.data:
             if isnan(t) or isinf(t) or (abs(t) > THRUST_RANGE_LIMIT):
                 rospy.logwarn_throttle(10, 'Message out of range, ignoring...')
                 return False

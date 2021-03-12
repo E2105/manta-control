@@ -20,6 +20,7 @@
 // ADDED FOR STANDARDIZATION
 #include "geometry_msgs/Twist.h"
 #include "std_msgs/ByteMultiArray.h"
+#include "nav_msgs/Odometry.h"
 
 class Controller
 {
@@ -27,7 +28,7 @@ public:
   explicit Controller(ros::NodeHandle nh);
   void commandCallback(const geometry_msgs::Twist &msg);
   void modeCallback(const std_msgs::ByteMultiArray &msg); // NEW FOR BYTE MODE ARRAY
-  void stateCallback(const vortex_msgs::RovState &msg);
+  void stateCallback(const nav_msgs::Odometry &msg);      // standardized
   void configCallback(const vortex_controller::VortexControllerConfig& config, uint32_t level);
   void spin();
 private:

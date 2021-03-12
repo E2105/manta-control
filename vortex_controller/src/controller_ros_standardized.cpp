@@ -22,7 +22,7 @@ Controller::Controller(ros::NodeHandle nh) : m_nh(nh), m_frequency(10)
   m_command_sub = m_nh.subscribe("joy/twist_motion", 1, &Controller::commandCallback, this);
   m_mode_sub    = m_nh.subscribe("joy/control_mode", 1, &Controller::modeCallback, this);           // Make a new callback
 
-  m_state_sub   = m_nh.subscribe("state_estimate", 1, &Controller::stateCallback, this);
+  m_state_sub   = m_nh.subscribe("estimator/state", 1, &Controller::stateCallback, this);           // standardized
   m_wrench_pub  = m_nh.advertise<geometry_msgs::Wrench>("controller/forces", 1);
   m_mode_pub    = m_nh.advertise<std_msgs::String>("controller/mode", 10);
   m_debug_pub   = m_nh.advertise<vortex_msgs::Debug>("debug/controlstates", 10);                    // letting it be for now, just for debugging
@@ -122,15 +122,15 @@ ControlMode Controller::getControlMode(const std_msgs::ByteMultiArray& msg) cons
   return new_control_mode;
 }
 
-void Controller::stateCallback(const vortex_msgs::RovState &msg)
+void Controller::stateCallback(const nav_msgs::Odometry &msg)       // standardized
 {
   Eigen::Vector3d    position;
   Eigen::Quaterniond orientation;
   Eigen::Vector6d    velocity;
 
-  tf::pointMsgToEigen(msg.pose.position, position);
-  tf::quaternionMsgToEigen(msg.pose.orientation, orientation);
-  tf::twistMsgToEigen(msg.twist, velocity);
+  tf::pointMsgToEigen(msg.pose.pose.position, position);            //std
+  tf::quaternionMsgToEigen(msg.pose.pose.orientation, orientation); //std
+  tf::twistMsgToEigen(msg.twist.twist, velocity);                   //std
 
   bool orientation_invalid = (abs(orientation.norm() - 1) > c_max_quat_norm_deviation);
   if (isFucked(position) || isFucked(velocity) || orientation_invalid)
@@ -383,6 +383,7 @@ bool Controller::healthyMotionMessage(const geometry_msgs::Twist& msg) // CHANGE
 bool Controller::healthyModeMessage(const std_msgs::ByteMultiArray& msg)
 {
   // Check correct length of control mode vector
+  // CHANGING TO 4 MODES?
 
   //Change out control_mode with data, and message type in
   if (msg.data.size() != ControlModes::CONTROL_MODE_END)
