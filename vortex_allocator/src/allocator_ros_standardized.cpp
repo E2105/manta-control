@@ -15,8 +15,9 @@ Allocator::Allocator(ros::NodeHandle nh)
   m_min_thrust(-std::numeric_limits<double>::infinity()),
   m_max_thrust(std::numeric_limits<double>::infinity())
 {
-  m_sub = m_nh.subscribe("rov_forces", 1, &Allocator::callback, this);        // Standard wrench message
-  m_pub = m_nh.advertise<vortex_msgs::ThrusterForces>("thruster_forces", 1);  // Change out for float64[]
+  m_sub = m_nh.subscribe("controller/forces", 1, &Allocator::callback, this);        // Standard wrench message, renamed topic
+  //m_pub = m_nh.advertise<vortex_msgs::ThrusterForces>("thruster_forces", 1);  // Change out for float64[]
+  m_pub = m_nh.advertise<std_msgs::Float64MultiArray>("thruster_forces", 1);
 
   if (!m_nh.getParam("/propulsion/dofs/num", m_num_degrees_of_freedom))
     ROS_FATAL("Failed to read parameter number of dofs.");
@@ -77,13 +78,12 @@ void Allocator::callback(const geometry_msgs::Wrench &msg_in) const
   if (!saturateVector(&thruster_forces, m_min_thrust, m_max_thrust))
     ROS_WARN_THROTTLE(1, "Thruster forces vector required saturation.");
 
-  vortex_msgs::ThrusterForces msg_out;
+  std_msgs::Float64MultiArray msg_out;
   arrayEigenToMsg(thruster_forces, &msg_out);
 
   for (int i = 0; i < m_num_thrusters; i++)
-    msg_out.thrust[i] *= m_direction[i];
+    msg_out.data[i] *= m_direction[i];                  // I was here       
 
-  msg_out.header.stamp = ros::Time::now();
   m_pub.publish(msg_out);
 }
 

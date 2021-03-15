@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 
+#include "std_msgs/Float64MultiArray.h"     // STANDARDIZATION
+
 // Return false if X has any nan or inf elements.
 template<typename Derived>
 inline bool isFucked(const Eigen::MatrixBase<Derived>& X)
@@ -71,13 +73,13 @@ inline Eigen::Matrix3d skew(const Eigen::Vector3d &v)
   return S;
 }
 
-inline void arrayEigenToMsg(const Eigen::VectorXd &u, vortex_msgs::ThrusterForces *msg)
+inline void arrayEigenToMsg(const Eigen::VectorXd &u, std_msgs::Float64MultiArray *msg)   // STANDRADIZATION
 {
   int r = u.size();
   std::vector<double> u_vec(r);
   for (int i = 0; i < r; ++i)
     u_vec[i] = u(i);
-  msg->thrust = u_vec;
+  msg->data = u_vec;
 }
 
 // Saturate all elements of vector v to within [min, max].

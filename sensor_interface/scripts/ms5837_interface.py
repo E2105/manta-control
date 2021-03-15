@@ -1,51 +1,61 @@
 #!/usr/bin/env python
 
 import rospy
-import ms5837
 
+from ms5837 import MS5837
 from sensor_msgs.msg import FluidPressure, Temperature
 
+# Library: https://github.com/bluerobotics/ms5837-python
 
 class Ms5837InterfaceNode(object):
+    """
+    This node continuously publishes readings from a Bar30 pressure sensor.
+    """
+
     def __init__(self):
         rospy.init_node('pressure_node')
-        self.ms5837 = ms5837.MS5837(model=ms5837.MODEL_30BA)
-        self.pub_pressure = rospy.Publisher('sensors/pressure',
-                                            FluidPressure,
-                                            queue_size=1)
-        self.pub_temp = rospy.Publisher('sensors/temperature',
-                                        Temperature,
-                                        queue_size=1)
 
-        if not self.ms5837.init():
-            rospy.logfatal('Failed to initialize pressure sensor. Check the connection.')
+        self.sensor = MS5837(model=ms5837.MODEL_30BA)
+
+        # Initiating Subscribers and Publishers
+        self.pub_pressure = rospy.Publisher('sensors/pressure', FluidPressure, queue_size=1)
+        self.pub_temp = rospy.Publisher('sensors/temperature', Temperature, queue_size=1)
+
+        if not self.sensor.init():
+            rospy.logfatal('Failed to initialize.')
         else:
-            if not self.ms5837.read():
-                rospy.logfatal('Failed to read from pressure sensor.')
+            if not self.sensor.read():
+                rospy.logfatal('Failed to read.')
             else:
-                rospy.loginfo('Successfully initialized pressure sensor.')
+                rospy.loginfo('Successfully initialized.')
+         
         self.talker()
 
     def talker(self):
-        pressure_msg = FluidPressure()
-        pressure_msg.variance = 0
-        temp_msg = Temperature()
-        temp_msg.variance = 0
+        
+        # Class Instances
+        pressure = FluidPressure()
+        pressure.variance = 0
+        temp = Temperature()
+        temp.variance = 0
 
         while not rospy.is_shutdown():
-            if self.ms5837.read():
-                pressure_msg.header.stamp = rospy.get_rostime()
-                pressure_msg.fluid_pressure = self.ms5837.pressure(ms5837.UNITS_Pa)
+            if self.sensor.read():
+                # Pressure reading (Pa)
+                pressure.header.stamp = rospy.get_rostime()
+                pressure.fluid_pressure = self.sensor.pressure(ms5837.UNITS_Pa)
 
-                temp_msg.header.stamp = rospy.get_rostime()
-                temp_msg.temperature = self.ms5837.temperature()
+                # Temperature reading (C)
+                temp.header.stamp = rospy.get_rostime()
+                temp.temperature = self.sensor.temperature(ms5837.UNITS_Centigrade)
 
-                self.pub_pressure.publish(pressure_msg)
-                self.pub_temp.publish(temp_msg)
+                # Publishing
+                self.pub_pressure.publish(pressure)
+                self.pub_temp.publish(temp)
             else:
-                rospy.roswarn('Failed to read from pressure sensor.')
+                rospy.roswarn('Failed to read.')
 
-            rospy.Rate(10).sleep()
+            rospy.Rate(10).sleep()  # 10 hz
 
 
 if __name__ == '__main__':
@@ -53,6 +63,6 @@ if __name__ == '__main__':
         pressure_node = Ms5837InterfaceNode()
         rospy.spin()
     except IOError:
-        rospy.logerr('IOError caught, shutting down.')
+        rospy.logerr('IOError caught. Shutting down.')
     except rospy.ROSInterruptException:
         pass

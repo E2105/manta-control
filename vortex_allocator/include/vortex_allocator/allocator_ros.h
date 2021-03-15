@@ -3,6 +3,7 @@
 
 #include "ros/ros.h"
 #include "geometry_msgs/Wrench.h"
+#include "std_msgs/Float64MultiArray.h" //test
 
 #include "vortex_allocator/pseudoinverse_allocator.h"
 
