@@ -3,7 +3,6 @@ project(thruster_interface)
 
 find_package(catkin REQUIRED COMPONENTS
   rospy
-  vortex_msgs
   std_msgs
   message_generation
   roslint
@@ -19,7 +18,6 @@ generate_messages()
 catkin_package(
   CATKIN_DEPENDS
   rospy
-  vortex_msgs
   std_msgs
   message_runtime
 )

@@ -8,7 +8,6 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   roscpp
   vortex
-  vortex_msgs
   roslint
 )
 
@@ -25,7 +24,6 @@ catkin_package(
   geometry_msgs
   roscpp
   vortex
-  vortex_msgs
 )
 
 include_directories(
@@ -36,7 +34,7 @@ include_directories(
 
 add_executable(${PROJECT_NAME}_node
   src/allocator_node.cpp
-  src/allocator_ros_standardized.cpp            # STANDARDIZED
+  src/allocator_ros.cpp
   src/pseudoinverse_allocator.cpp
 )
 

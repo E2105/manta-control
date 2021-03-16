@@ -12,7 +12,7 @@
 
   <!--<node name="manipulator_interface" pkg="manipulator_interface" type="manipulator_interface.py" output="screen" />-->
 
-  <node pkg="thruster_interface"         type="thruster_interface_node_standardized.py" name="thruster_interface" output="screen" />
+  <node pkg="thruster_interface"         type="thruster_interface.py"      name="thruster_interface" output="screen" />
   <node pkg="vortex_controller"          type="node"                       name="controller"         output="screen"/>
   <node pkg="vortex_allocator"           type="node"                       name="allocator"          output="screen"/>
   <node pkg="vortex_estimator"           type="node"                       name="estimator"          output="screen"/>

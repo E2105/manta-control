@@ -6,5 +6,5 @@
 
   <param name="thruster_interface/thrusters_connected" type="bool" value="true" />
 
-  <node name="thruster_interface" pkg="thruster_interface" type="thruster_interface_node.py" output="screen" />
+  <node name="thruster_interface" pkg="thruster_interface" type="thruster_interface.py" output="screen" />
 </launch>

@@ -1,10 +1,7 @@
 #include "vortex_controller/controller_ros.h"
 
-#include "vortex/eigen_helper.h"
 #include <tf/transform_datatypes.h>
 #include <eigen_conversions/eigen_msg.h>
-
-#include "std_msgs/String.h"
 
 #include <math.h>
 #include <map>
@@ -13,21 +10,25 @@
 
 Controller::Controller(ros::NodeHandle nh) : m_nh(nh), m_frequency(10)
 {
-  m_command_sub = m_nh.subscribe("propulsion_command", 1, &Controller::commandCallback, this);
-  m_state_sub   = m_nh.subscribe("state_estimate", 1, &Controller::stateCallback, this);
-  m_wrench_pub  = m_nh.advertise<geometry_msgs::Wrench>("rov_forces", 1);
+  
+  m_command_sub = m_nh.subscribe("joy/twist_motion", 1, &Controller::commandCallback, this);
+  m_mode_sub    = m_nh.subscribe("joy/control_mode", 1, &Controller::modeCallback, this);
+
+  m_state_sub   = m_nh.subscribe("estimator/state", 1, &Controller::stateCallback, this);
+  m_wrench_pub  = m_nh.advertise<geometry_msgs::Wrench>("controller/forces", 1);
   m_mode_pub    = m_nh.advertise<std_msgs::String>("controller/mode", 10);
   m_debug_pub   = m_nh.advertise<vortex_msgs::Debug>("debug/controlstates", 10);
 
   m_control_mode = ControlModes::OPEN_LOOP;
 
   if (!m_nh.getParam("/controller/frequency", m_frequency))
-    ROS_WARN("Failed to read parameter controller frequency, defaulting to %i Hz.", m_frequency);
+    ROS_WARN("Failed to read parameter: /controller/frequency. Using default frequency: %i Hz.", m_frequency);
+
   std::string s;
   if (!m_nh.getParam("/computer", s))
   {
     s = "pc-debug";
-    ROS_WARN("Failed to read parameter computer");
+    ROS_WARN("Failed to read parameter: /computer");
   }
   if (s == "pc-debug")
     m_debug_mode = true;
@@ -44,11 +45,31 @@ Controller::Controller(ros::NodeHandle nh) : m_nh(nh), m_frequency(10)
   ROS_INFO("Initialized at %i Hz.", m_frequency);
 }
 
-void Controller::commandCallback(const vortex_msgs::PropulsionCommand& msg)
+void Controller::commandCallback(const geometry_msgs::Twist& msg)
 {
-  if (!healthyMessage(msg))
+  if (!healthyMotionMessage(msg))
     return;
 
+  // Writing joystick messages to the command list
+  Eigen::Vector6d command;
+  command(0) = msg.linear.x;
+  command(1) = msg.linear.y;
+  command(2) = msg.linear.z;
+  command(3) = msg.angular.x;
+  command(4) = msg.angular.y;
+  command(5) = msg.angular.z;
+  m_setpoints->update(command);
+}
+
+
+
+void Controller::modeCallback(const std_msgs::ByteMultiArray& msg)
+{
+
+  if (!healthyModeMessage(msg))
+    return;
+
+  // Control mode decided by A, B, X, Y on the Xbox controller (byte array)
   ControlMode new_control_mode = getControlMode(msg);
   if (new_control_mode != m_control_mode)
   {
@@ -57,19 +78,16 @@ void Controller::commandCallback(const vortex_msgs::PropulsionCommand& msg)
     ROS_INFO_STREAM("Changing mode to " << controlModeString(m_control_mode) << ".");
   }
   publishControlMode();
-
-  Eigen::Vector6d command;
-  for (int i = 0; i < 6; ++i)
-    command(i) = msg.motion[i];
-  m_setpoints->update(command);
 }
 
-ControlMode Controller::getControlMode(const vortex_msgs::PropulsionCommand& msg) const
+
+ControlMode Controller::getControlMode(const std_msgs::ByteMultiArray& msg) const
 {
+
   ControlMode new_control_mode = m_control_mode;
-  for (unsigned i = 0; i < msg.control_mode.size(); ++i)
+  for (unsigned i = 0; i < msg.data.size(); ++i)
   {
-    if (msg.control_mode[i])
+    if (msg.data[i])
     {
       new_control_mode = static_cast<ControlMode>(i);
       break;
@@ -78,15 +96,16 @@ ControlMode Controller::getControlMode(const vortex_msgs::PropulsionCommand& msg
   return new_control_mode;
 }
 
-void Controller::stateCallback(const vortex_msgs::RovState &msg)
+
+void Controller::stateCallback(const nav_msgs::Odometry &msg)
 {
   Eigen::Vector3d    position;
   Eigen::Quaterniond orientation;
   Eigen::Vector6d    velocity;
 
-  tf::pointMsgToEigen(msg.pose.position, position);
-  tf::quaternionMsgToEigen(msg.pose.orientation, orientation);
-  tf::twistMsgToEigen(msg.twist, velocity);
+  tf::pointMsgToEigen(msg.pose.pose.position, position);
+  tf::quaternionMsgToEigen(msg.pose.pose.orientation, orientation);
+  tf::twistMsgToEigen(msg.twist.twist, velocity);
 
   bool orientation_invalid = (abs(orientation.norm() - 1) > c_max_quat_norm_deviation);
   if (isFucked(position) || isFucked(velocity) || orientation_invalid)
@@ -127,7 +146,7 @@ void Controller::spin()
   ros::Rate rate(m_frequency);
   while (ros::ok())
   {
-    // TODO(mortenfyhn): check value of bool return from getters
+    // TODO: check value of bool return from getters
     m_state->get(&position_state, &orientation_state, &velocity_state);
     m_setpoints->get(&position_setpoint, &orientation_setpoint);
     m_setpoints->get(&tau_openloop);
@@ -295,30 +314,63 @@ void Controller::initPositionHoldController()
   m_controller.reset(new QuaternionPdController(a, b, c, W, B, r_G, r_B));
 }
 
-bool Controller::healthyMessage(const vortex_msgs::PropulsionCommand& msg)
+bool Controller::healthyMotionMessage(const geometry_msgs::Twist& msg)
 {
   // Check that motion commands are in range
-  for (int i = 0; i < msg.motion.size(); ++i)
-  {
-    if (msg.motion[i] > 1 || msg.motion[i] < -1)
+  //  Each dimension is taken out of the Twist class and checked
+
+  // Linear motion
+  if (msg.linear.x > 1 || msg.linear.x < -1)
     {
-      ROS_WARN("Motion command out of range, ignoring message...");
+      ROS_WARN("Surge command out of range, ignoring message...");
       return false;
     }
-  }
+  if (msg.linear.y > 1 || msg.linear.y < -1)
+    {
+      ROS_WARN("Sway command out of range, ignoring message...");
+      return false;
+    }
+  if (msg.linear.z > 1 || msg.linear.z < -1)
+    {
+      ROS_WARN("Heave command out of range, ignoring message...");
+      return false;
+    }
+  // Angular motion
+  if (msg.angular.x > 1 || msg.angular.x < -1)
+    {
+      ROS_WARN("Roll command out of range, ignoring message...");
+      return false;
+    }
+  if (msg.angular.y > 1 || msg.angular.y < -1)
+    {
+      ROS_WARN("Pitch command out of range, ignoring message...");
+      return false;
+    }
+  if (msg.angular.z > 1 || msg.angular.z < -1)
+    {
+      ROS_WARN("Yaw command out of range, ignoring message...");
+      return false;
+    }
+  return true;
+}
+  
 
+bool Controller::healthyModeMessage(const std_msgs::ByteMultiArray& msg)
+{
   // Check correct length of control mode vector
-  if (msg.control_mode.size() != ControlModes::CONTROL_MODE_END)
+  //  The array length is currently set to 4, was previously 6
+
+  if (msg.data.size() != ControlModes::CONTROL_MODE_END)
   {
-    ROS_WARN_STREAM_THROTTLE(1, "Control mode vector has " << msg.control_mode.size()
+    ROS_WARN_STREAM_THROTTLE(1, "Control mode vector has " << msg.data.size()
       << " element(s), should have " << ControlModes::CONTROL_MODE_END);
     return false;
   }
 
   // Check that exactly zero or one control mode is requested
   int num_requested_modes = 0;
-  for (int i = 0; i < msg.control_mode.size(); ++i)
-    if (msg.control_mode[i])
+  for (int i = 0; i < msg.data.size(); ++i)
+    if (msg.data[i])
       num_requested_modes++;
   if (num_requested_modes > 1)
   {
