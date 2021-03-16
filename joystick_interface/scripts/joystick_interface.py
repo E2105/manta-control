@@ -1,72 +1,109 @@
 #!/usr/bin/env python
+
 import rospy
-from vortex_msgs.msg import PropulsionCommand, Manipulator
 from sensor_msgs.msg import Joy
+from std_msgs.msg import ByteMultiArray, Int8MultiArray
+from geometry_msgs.msg import Twist
 
 
-class JoystickInterfaceNode(object):
+class JoystickInterfaceNode():
+
+    """
+    This class maps the joystick input.
+    """
+
     def __init__(self):
         rospy.init_node('joystick_node')
 
-        # Input configuration
-        #   joy_throttle is a default throttle mechanic within joy
+        # Initiating Subcribers and Publishers
+        # ------------------------------------
+
+        # Joystick Input
         self.sub = rospy.Subscriber('joy_throttle', Joy, self.callback, queue_size=1)
 
-        # Output configuration
-        #   Propulsion: float64[6] motion, bool[] control_mode
-        #   Manipulator: int8 claw-direction, int8 vertical_stepper_direction
-        self.pub_motion = rospy.Publisher('propulsion_command', PropulsionCommand, queue_size=1)
-        self.pub_manipulator = rospy.Publisher('manipulator_command', Manipulator, queue_size=1)
+        # Motion data
+        self.pub_motion = rospy.Publisher('joy/twist_motion', Twist, queue_size=1)
 
-        # Name buttons and axes based on index from joy-node
+        # Control modes
+        self.pub_mode = rospy.Publisher('joy/control_mode', ByteMultiArray, queue_size=1)
+
+        # D-PAD
+        self.pub_dpad = rospy.Publisher('joy/dpad', Int8MultiArray, queue_size=1)
+
+
+        # Input Mapping
+        # -------------
+
         self.buttons_map = ['A', 'B', 'X', 'Y', 'LB', 'RB', 'back',
                             'start', 'power', 'stick_button_left',
                             'stick_button_right']
 
         self.axes_map = ['horizontal_axis_left_stick',
-                         'vertical_axis_left_stick', 'LT',
+                         'vertical_axis_left_stick',
+                         'LT',
                          'horizontal_axis_right_stick',
-                         'vertical_axis_right_stick', 'RT',
-                         'dpad_horizontal', 'dpad_vertical']
+                         'vertical_axis_right_stick',
+                         'RT',
+                         'dpad_horizontal',
+                         'dpad_vertical']
 
     def callback(self, msg):
-        # Connect values to names in two dictionaries
-        buttons = {}
-        axes = {}
+        
+        # Instances of published classes
+        twist = Twist()             # Motion
+        bytez = ByteMultiArray()    # Modes
+        dpad = Int8MultiArray()     # D-PAD
 
-        for i in range(len(msg.buttons)):
-            buttons[self.buttons_map[i]] = msg.buttons[i]
+        # Dictionaries with button/axes names as keys
+        twist_motion = {}
+        button_array = {}
 
-        for j in range(len(msg.axes)):
-            axes[self.axes_map[j]] = msg.axes[j]
+        for i in range(len(msg.axes)):
+            twist_motion[self.axes_map[i]] = msg.axes[i]
 
-        manipulator_msg = Manipulator()
-        manipulator_msg.claw_direction = axes['dpad_horizontal']
-        manipulator_msg.vertical_stepper_direction = axes['dpad_vertical']
+        for j in range(len(msg.buttons)):
+            button_array[self.buttons_map[j]] = msg.buttons[j]
 
-        motion_msg = PropulsionCommand()
-        motion_msg.motion = [
-            axes['vertical_axis_left_stick'],     # Surge
-            -axes['horizontal_axis_left_stick'],  # Sway
-            (axes['RT'] - axes['LT'])/2,          # Heave
-            (buttons['RB'] - buttons['LB']),      # Roll
-            -axes['vertical_axis_right_stick'],   # Pitch
-            -axes['horizontal_axis_right_stick']  # Yaw
+        # Motion Controls
+        # ---------------
+
+        # Linear motion
+        twist.linear.x = twist_motion['vertical_axis_left_stick']       # Surge
+        twist.linear.y = -twist_motion['horizontal_axis_left_stick']    # Sway
+        twist.linear.z = (twist_motion['RT'] - twist_motion['LT'])/2    # Heave
+
+        # Angular motion
+        twist.angular.x = (button_array['RB'] - button_array['LB'])     # Roll
+        twist.angular.y = -twist_motion['vertical_axis_right_stick']    # Pitch
+        twist.angular.z = twist_motion['horizontal_axis_right_stick']   # Yaw
+
+
+        # Control Modes
+        # -------------
+
+        bytez.data = [
+            button_array['A'],
+            button_array['X'],
+            button_array['B'],
+            button_array['Y']
         ]
 
-        motion_msg.control_mode = [
-            (buttons['A'] == 1),
-            (buttons['X'] == 1),
-            (buttons['B'] == 1),
-            (buttons['Y'] == 1),
-            (False),
-            (False)
+        """
+        bytez is not pushing boolean values that the controller EXPECTS, this needs to be done in the controller
+        """
+        
+        # The D-PAD
+        # ---------
+
+        dpad.data = [
+            twist_motion['dpad_horizontal'],
+            twist_motion['dpad_vertical']
         ]
 
-        motion_msg.header.stamp = rospy.get_rostime()
-
-        self.pub_manipulator.publish(manipulator_msg)
-        self.pub_motion.publish(motion_msg)
+        # Publishing topics
+        self.pub_motion.publish(twist)
+        self.pub_mode.publish(bytez)
+        self.pub_dpad.publish(dpad)
 
 
 if __name__ == '__main__':
