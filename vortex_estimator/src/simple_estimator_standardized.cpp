@@ -7,6 +7,7 @@ SimpleEstimator::SimpleEstimator()
 {
   m_imu_sub      = m_nh.subscribe("/sensors/imu/data", 1, &SimpleEstimator::imuCallback, this);
   m_pressure_sub = m_nh.subscribe("/sensors/pressure", 1, &SimpleEstimator::pressureCallback, this);
+  m_position_sub = m_nh.subscribe("/sensors/uwgps/data", 1, &SimpleEstimator::positionCallback, this);  //Added for UW GPS
   m_state_pub    = m_nh.advertise<nav_msgs::Odometry>("estimator/state", 1);
 
   if (!m_nh.getParam("atmosphere/pressure", m_atmospheric_pressure))
@@ -22,6 +23,9 @@ SimpleEstimator::SimpleEstimator()
   m_state.pose.pose.orientation.x = 0.0;
   m_state.pose.pose.orientation.y = 0.0;
   m_state.pose.pose.orientation.z = 0.0;
+  m_state.pose.pose.position.x    = 0.0;  //Added for UW GPS
+  m_state.pose.pose.position.y    = 0.0;  //Added for UW GPS
+  m_state.pose.pose.position.z    = 0.0;  //Added for UW GPS
 
   ROS_INFO("Estimator initialized.");
 }
@@ -55,4 +59,12 @@ void SimpleEstimator::pressureCallback(const sensor_msgs::FluidPressure &msg)
   const float depth_meters = gauge_pressure / (m_water_density * m_gravitational_acceleration);
   m_state.pose.pose.position.z = depth_meters;                                        // standardized
   m_state_pub.publish(m_state);
+}
+
+void SimpleEstimator::positionCallback(const sensor_msgs::UwGPS &msg)  //Added for UW GPS
+{
+  sudo read from WaterLinked system and add to m_state  //Added for UW GPS
+  m_state.pose.pose.position.x = ???;  //Added for UW GPS
+  m_state.pose.pose.position.y = ???;  //Added for UW GPS
+  m_state_pub.publish(m_state);  //Added for UW GPS
 }
