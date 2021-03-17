@@ -18,11 +18,13 @@ class SimpleEstimator
     SimpleEstimator();
     void imuCallback(const sensor_msgs::Imu &msg);
     void pressureCallback(const sensor_msgs::FluidPressure &msg);
+    void positionCallback(const sensor_msgs::UwGPS &msg);   //Added for UW GPS
     void publish();
   private:
     ros::NodeHandle m_nh;
     ros::Subscriber m_imu_sub;
     ros::Subscriber m_pressure_sub;
+    ros::Subscriber m_position_sub;  //Added for UW GPS
     ros::Publisher  m_state_pub;
 
     double m_atmospheric_pressure;
