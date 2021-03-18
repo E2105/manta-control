@@ -13,7 +13,8 @@ enum ControlMode
   DEPTH_HEADING_HOLD  = 3,
   OPEN_LOOP_RESTORING = 4,
   STAY_LEVEL          = 5,
-  CONTROL_MODE_END    = 4                                   // STANDARDIZATION, CHANGED TO 4 FROM 6
+  FEEDBACK_CONTROL    = 6,  // Added for semi autonomy. Funker kanskje ikke. Sjekk
+  CONTROL_MODE_END    = 7
 };
 }  // namespace ControlModes
 typedef ControlModes::ControlMode ControlMode;
@@ -45,6 +46,10 @@ inline std::string controlModeString(ControlMode control_mode)
 
     case ControlModes::STAY_LEVEL:
     s = "STAY LEVEL";
+    break;
+      
+    case ControlModes::FEEDBACK_CONTROL:    // Added for semi autonomy
+    s = "COMPLETE FEEBACK CONTROL";
     break;
 
     default:
