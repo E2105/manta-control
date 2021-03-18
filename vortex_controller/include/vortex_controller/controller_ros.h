@@ -80,6 +80,10 @@ private:
                               const Eigen::Quaterniond &orientation_state,
                               const Eigen::Vector6d &velocity_state,
                               const Eigen::Quaterniond &orientation_setpoint);
+  Eigen::Vector6d feedbackControl(const Eigen::Vector3d &position_state,          // Added for semi-autonomy
+                                  const Eigen::Quaterniond &orientation_state,
+                                  const Eigen::Vector6d &velocity_state,
+                                  const Eigen::Quaterniond &orientation_setpoint);
 };
 
 #endif  // VORTEX_CONTROLLER_CONTROLLER_ROS_H
