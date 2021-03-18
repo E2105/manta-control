@@ -132,6 +132,7 @@ void Controller::spin()
   Eigen::Vector6d    tau_staylevel        = Eigen::VectorXd::Zero(6);
   Eigen::Vector6d    tau_depthhold        = Eigen::VectorXd::Zero(6);
   Eigen::Vector6d    tau_headinghold      = Eigen::VectorXd::Zero(6);
+  Eigen::Vector6d    tau_feedbackcontrol  = Eigen::VectorXd::Zero(6);   // Added for semi-autono
 
   Eigen::Vector3d    position_state       = Eigen::Vector3d::Zero();
   Eigen::Quaterniond orientation_state    = Eigen::Quaterniond::Identity();
@@ -204,6 +205,14 @@ void Controller::spin()
                                     orientation_setpoint);
       tau_command = tau_openloop + tau_depthhold + tau_headinghold;
       break;
+        
+      case ControlModes::FEEDBACK_CONTROL:      // Added for semi-autonomy
+      tau_feedbackcontrol = feedbackControl(position_state,
+                                            orientation_state,
+                                            velocity_state,
+                                            position_state);
+      tau_command = tau_feedbackcontrol;
+      break;
 
       default:
       ROS_ERROR("Default control mode reached.");
@@ -242,7 +251,7 @@ void Controller::resetSetpoints()
   m_setpoints->set(position, orientation);
 }
 
-void Controller::updateSetpoint(PoseIndex axis)
+void Controller::updateSetpoint(PoseIndex axis)   // Only updates z axis and around z axis. Maybe add more?
 {
   Eigen::Vector3d state;
   Eigen::Vector3d setpoint;
@@ -311,6 +320,7 @@ void Controller::initPositionHoldController()
   double W = mass * acceleration_of_gravity;
   double B = density_of_water * displacement * acceleration_of_gravity;
 
+  //makes quaternionPdController
   m_controller.reset(new QuaternionPdController(a, b, c, W, B, r_G, r_B));
 }
 
@@ -358,7 +368,7 @@ bool Controller::healthyMotionMessage(const geometry_msgs::Twist& msg)
 bool Controller::healthyModeMessage(const std_msgs::ByteMultiArray& msg)
 {
   // Check correct length of control mode vector
-  //  The array length is currently set to 4, was previously 6
+  //  The array length is currently set to 7, was previously 6. 
 
   if (msg.data.size() != ControlModes::CONTROL_MODE_END)
   {
@@ -505,5 +515,17 @@ Eigen::Vector6d Controller::headingHold(const Eigen::Vector6d &tau_openloop,
     tau.setZero();
   }
 
+  return tau;
+}
+
+Eigen::Vector6d Controller::feedbackControl(const Eigen::Vector3d &position_state,        // Added for semi-autonomy, no joy control
+                                            const Eigen::Quaterniond &orientation_state,
+                                            const Eigen::Vector6d &velocity_state,
+                                            const Eigen::Quaterniond &orientation_setpoint)
+{
+  Eigen::Vector6d tau;
+
+  tau = m_controller->getFeedback(Eigen::Vector3d::Zero(), orientation_state, velocity_state,
+                                  Eigen::Vector3d::Zero(), orientation_setpoint);
   return tau;
 }
