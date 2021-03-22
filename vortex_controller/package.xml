@@ -3,7 +3,7 @@
   <name>vortex_controller</name>
   <version>0.1.0</version>
   <description>Controller for the drone Manta.</description>
-  <maintainer email="x">x</maintainer>
+  <maintainer email="x@x.com">x@x.com</maintainer>
   <license>MIT</license>
 
   <buildtool_depend>catkin</buildtool_depend>
