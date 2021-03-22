@@ -1,4 +1,4 @@
-#include "vortex_controller/quaternion_pd_controller.h"
+#include "vortex_controller/quaternion_pid_controller.h"
 
 QuaternionPdController::QuaternionPdController(double a, double b, double c, double i, double W, double B,
                                                const Eigen::Vector3d &r_G, const Eigen::Vector3d &r_B)
