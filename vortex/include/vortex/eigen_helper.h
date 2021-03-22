@@ -1,7 +1,6 @@
 #ifndef VORTEX_EIGEN_HELPER_H
 #define VORTEX_EIGEN_HELPER_H
 
-#include "vortex_msgs/ThrusterForces.h"
 #include "ros/ros.h"
 #include <Eigen/Dense>
 
