@@ -159,20 +159,24 @@ void Controller::spin()
 
     switch (m_control_mode)
     {
+      // Openloop: Only controlled by joystick
       case ControlModes::OPEN_LOOP:
       tau_command = tau_openloop;
       break;
-
+        
+      // Restoring force: 
       case ControlModes::OPEN_LOOP_RESTORING:
       tau_restoring = m_controller->getRestoring(orientation_state);
       tau_command = tau_openloop + tau_restoring;
       break;
 
+      // Keeps Roll and Pitch 0.
       case ControlModes::STAY_LEVEL:
       tau_staylevel = stayLevel(orientation_state, velocity_state);
       tau_command = tau_openloop + tau_staylevel;
       break;
 
+      // Keeps depth steady.
       case ControlModes::DEPTH_HOLD:
       tau_depthhold = depthHold(tau_openloop,
                                 position_state,
@@ -182,6 +186,7 @@ void Controller::spin()
       tau_command = tau_openloop + tau_depthhold;
       break;
 
+      // Keeps Yaw steady. 
       case ControlModes::HEADING_HOLD:
       tau_headinghold = headingHold(tau_openloop,
                                     position_state,
@@ -191,6 +196,7 @@ void Controller::spin()
       tau_command = tau_openloop + tau_headinghold;
       break;
 
+      // Keeps depth and yaw steady.
       case ControlModes::DEPTH_HEADING_HOLD:
       tau_depthhold = depthHold(tau_openloop,
                                 position_state,
