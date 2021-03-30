@@ -44,12 +44,14 @@ Allocator::Allocator(ros::NodeHandle nh)
 
   // Parameter: Thruster Allocation Matrix
   //    A matrix describing the direction of forces from all of the actuators
+
   Eigen::MatrixXd thrust_configuration;
   if (!getMatrixParam(m_nh, "propulsion/thrusters/configuration_matrix", &thrust_configuration))
   {
     ROS_FATAL("Failed to read parameter thrust config matrix. Killing node...");
     ros::shutdown();
   }
+
   Eigen::MatrixXd thrust_configuration_pseudoinverse;
   if (!pseudoinverse(thrust_configuration, &thrust_configuration_pseudoinverse))
   {
@@ -64,16 +66,20 @@ Allocator::Allocator(ros::NodeHandle nh)
 
 void Allocator::callback(const geometry_msgs::Wrench &msg_in) const
 {
+  // Wrench forces to ROV forces vector
   const Eigen::VectorXd rov_forces = rovForcesMsgToEigen(msg_in);
 
+  // Check for invalid force values
   if (!healthyWrench(rov_forces))
   {
     ROS_ERROR("ROV forces vector invalid, ignoring.");
     return;
   }
 
+  // Calculated the forces for each thruster
   Eigen::VectorXd thruster_forces = m_pseudoinverse_allocator->compute(rov_forces);
 
+  // Check for invalid thruster force values
   if (isFucked(thruster_forces))
   {
     ROS_ERROR("Thruster forces vector invalid, ignoring.");
@@ -83,6 +89,7 @@ void Allocator::callback(const geometry_msgs::Wrench &msg_in) const
   if (!saturateVector(&thruster_forces, m_min_thrust, m_max_thrust))
     ROS_WARN_THROTTLE(1, "Thruster forces vector required saturation.");
 
+  // Publish the forces
   std_msgs::Float64MultiArray msg_out;
   arrayEigenToMsg(thruster_forces, &msg_out);
 
@@ -95,6 +102,9 @@ void Allocator::callback(const geometry_msgs::Wrench &msg_in) const
 
 Eigen::VectorXd Allocator::rovForcesMsgToEigen(const geometry_msgs::Wrench &msg) const
 {
+  // The ROV forces are represented in a Wrench message coming from the controller,
+  // and gathered in a single vector as long as the amount of DOFs.
+
   Eigen::VectorXd rov_forces(m_num_degrees_of_freedom);
   unsigned i = 0;
   if (m_active_degrees_of_freedom.at("surge"))
@@ -110,6 +120,7 @@ Eigen::VectorXd Allocator::rovForcesMsgToEigen(const geometry_msgs::Wrench &msg)
   if (m_active_degrees_of_freedom.at("yaw"))
     rov_forces(i++) = msg.torque.z;
 
+  // Returns no forces if invalid
   if (i != m_num_degrees_of_freedom)
   {
     ROS_WARN_STREAM("Invalid length of rov_forces vector. Is " << i << ", should be " << m_num_degrees_of_freedom <<

@@ -20,6 +20,7 @@ SimpleEstimator::SimpleEstimator()
   if (!m_nh.getParam("/gravity/acceleration", m_gravitational_acceleration))
     ROS_ERROR("Could not read parameter: /gravity/acceleration.");
 
+  // Initiating orientation in quaternions
   m_state.pose.pose.orientation.w = 1.0;
   m_state.pose.pose.orientation.x = 0.0;
   m_state.pose.pose.orientation.y = 0.0;

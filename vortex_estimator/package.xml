@@ -2,7 +2,7 @@
 <package>
   <name>vortex_estimator</name>
   <version>0.1.0</version>
-  <description>Fuses odometry and sensor readings. Not currently an estimator.</description>
+  <description>Ensures quaternions are in a NED frame</description>
   <maintainer email="borgepahlm@gmail.com">Børge Pahlm</maintainer>
   <license>MIT</license>
 

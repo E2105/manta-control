@@ -7,8 +7,7 @@ find_package(catkin REQUIRED COMPONENTS
   eigen_conversions
   roscpp
   roslint
-  vortex_msgs
-  nav_msgs          # added for Odometry.msg
+  nav_msgs
 )
 
 find_package(Eigen3 REQUIRED)
@@ -22,7 +21,7 @@ catkin_package(
   CATKIN_DEPENDS
   eigen_conversions
   roscpp
-  nav_msgs          # standardized
+  nav_msgs
 )
 
 include_directories(
@@ -33,7 +32,7 @@ include_directories(
 
 add_executable(${PROJECT_NAME}_node
   src/estimator_node.cpp
-  src/simple_estimator_standardized.cpp         # standardized
+  src/estimator.cpp
 )
 
 set_target_properties(${PROJECT_NAME}_node PROPERTIES OUTPUT_NAME node PREFIX "")
