@@ -89,13 +89,14 @@ void Allocator::callback(const geometry_msgs::Wrench &msg_in) const
   if (!saturateVector(&thruster_forces, m_min_thrust, m_max_thrust))
     ROS_WARN_THROTTLE(1, "Thruster forces vector required saturation.");
 
-  // Publish the forces
   std_msgs::Float64MultiArray msg_out;
   arrayEigenToMsg(thruster_forces, &msg_out);
 
+  // Determines direction of thrusters from parameter files
   for (int i = 0; i < m_num_thrusters; i++)
     msg_out.data[i] *= m_direction[i];    
 
+  // Publish the forces
   m_pub.publish(msg_out);
 }
 
