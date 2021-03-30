@@ -9,28 +9,32 @@
 #include "vortex/eigen_typedefs.h"
 #include "vortex/eigen_helper.h"
 
+
 Allocator::Allocator(ros::NodeHandle nh)
   :
   m_nh(nh),
   m_min_thrust(-std::numeric_limits<double>::infinity()),
   m_max_thrust(std::numeric_limits<double>::infinity())
 {
+  // Initiating topics
   m_sub = m_nh.subscribe("controller/forces", 1, &Allocator::callback, this);
   m_pub = m_nh.advertise<std_msgs::Float64MultiArray>("thruster_forces", 1);
 
+  // General parameters
   if (!m_nh.getParam("/propulsion/dofs/num", m_num_degrees_of_freedom))
-    ROS_FATAL("Failed to read parameter number of dofs.");
+    ROS_FATAL("Failed to read parameter number of DOFs.");
   if (!m_nh.getParam("/propulsion/thrusters/num", m_num_thrusters))
     ROS_FATAL("Failed to read parameter number of thrusters.");
   if (!m_nh.getParam("/propulsion/dofs/which", m_active_degrees_of_freedom))
-    ROS_FATAL("Failed to read parameter which dofs.");
+    ROS_FATAL("Failed to read parameter which DOFs.");
   if (!m_nh.getParam("/propulsion/thrusters/direction", m_direction))
   {
     ROS_WARN("Failed to read parameter thruster direction.");
     std::fill(m_direction.begin(), m_direction.begin() + m_num_thrusters, 1);
   }
 
-  // Read thrust limits
+  // Parameter: Thruster forces
+  //    Thrust values sourced from vendors website
   std::vector<double> thrust;
   if (!m_nh.getParam("/thrusters/characteristics/thrust", thrust))
   {
@@ -38,7 +42,8 @@ Allocator::Allocator(ros::NodeHandle nh)
       m_min_thrust, m_max_thrust);
   }
 
-  // Read thrust config matrix
+  // Parameter: Thruster Allocation Matrix
+  //    A matrix describing the direction of forces from all of the actuators
   Eigen::MatrixXd thrust_configuration;
   if (!getMatrixParam(m_nh, "propulsion/thrusters/configuration_matrix", &thrust_configuration))
   {
@@ -55,6 +60,7 @@ Allocator::Allocator(ros::NodeHandle nh)
   m_pseudoinverse_allocator.reset(new PseudoinverseAllocator(thrust_configuration_pseudoinverse));
   ROS_INFO("Initialized.");
 }
+
 
 void Allocator::callback(const geometry_msgs::Wrench &msg_in) const
 {
