@@ -2,7 +2,7 @@
 
 import rospy
 
-from ms5837 import MS5837
+import ms5837
 from sensor_msgs.msg import FluidPressure, Temperature
 
 # Library: https://github.com/bluerobotics/ms5837-python
@@ -15,7 +15,7 @@ class Ms5837InterfaceNode(object):
     def __init__(self):
         rospy.init_node('pressure_node')
 
-        self.sensor = MS5837(model=ms5837.MODEL_30BA)
+        self.sensor = ms5837.MS5837_30BA()
 
         # Initiating Subscribers and Publishers
         self.pub_pressure = rospy.Publisher('sensors/pressure', FluidPressure, queue_size=1)
@@ -62,7 +62,7 @@ if __name__ == '__main__':
     try:
         pressure_node = Ms5837InterfaceNode()
         rospy.spin()
-    except IOError:
-        rospy.logerr('IOError caught. Shutting down.')
+    #except IOError:
+        #rospy.logerr('IOError caught. Shutting down.')
     except rospy.ROSInterruptException:
         pass

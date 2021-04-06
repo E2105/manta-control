@@ -13,7 +13,7 @@ enum ControlMode
   DEPTH_HEADING_HOLD  = 3,
   OPEN_LOOP_RESTORING = 4,
   STAY_LEVEL          = 5,
-  CONTROL_MODE_END    = 4   // Changed to 4 from 6 when switching to a ByteArray from a bool list to determine mode
+  CONTROL_MODE_END    = 4   // Changed to 4 from 6. It is an independant variable determining the amount of control modes comming in. Take out of array?
 };
 }
 

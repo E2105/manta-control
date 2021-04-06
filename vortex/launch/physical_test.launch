@@ -11,7 +11,7 @@
   <param name="stepper/default_speed_rpm" value="1"/>
 
   <!--<node name="manipulator_interface" pkg="manipulator_interface" type="manipulator_interface.py" output="screen" />-->
-  <node name="thruster_interface" pkg="thruster_interface" type="thruster_interface_node.py" output="screen" />
+  <node name="thruster_interface" pkg="thruster_interface" type="thruster_interface.py" output="screen" />
   <node pkg="vortex_controller" type="node" name="controller"     output="screen"/>
   <node pkg="vortex_allocator"  type="node" name="allocator"      output="screen"/>
   <node pkg="vortex_estimator"  type="node" name="estimator"      output="screen"/>
