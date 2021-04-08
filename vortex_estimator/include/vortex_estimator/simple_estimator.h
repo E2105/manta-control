@@ -10,6 +10,7 @@
 #include "sensor_msgs/Imu.h"
 #include "sensor_msgs/FluidPressure.h"
 #include "nav_msgs/Odometry.h"
+#include "std_msgs/Float64.h"
 
 class SimpleEstimator
 {
@@ -23,6 +24,7 @@ class SimpleEstimator
     ros::Subscriber m_imu_sub;
     ros::Subscriber m_pressure_sub;
     ros::Publisher  m_state_pub;
+    ros::Publisher  m_depth_pub;
 
     double m_atmospheric_pressure;
     double m_water_density;
@@ -31,6 +33,7 @@ class SimpleEstimator
     const double c_pi = 3.141592653589793;
 
     nav_msgs::Odometry m_state;
+    std_msgs::Float64 depth;
 };
 
 #endif  // VORTEX_ESTIMATOR_SIMPLE_ESTIMATOR_H

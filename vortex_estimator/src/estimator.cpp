@@ -9,6 +9,7 @@ SimpleEstimator::SimpleEstimator()
   m_imu_sub      = m_nh.subscribe("/sensors/imu/data", 1, &SimpleEstimator::imuCallback, this);
   m_pressure_sub = m_nh.subscribe("/sensors/pressure", 1, &SimpleEstimator::pressureCallback, this);
   m_state_pub    = m_nh.advertise<nav_msgs::Odometry>("estimator/state", 1);
+  m_depth_pub    = m_nh.advertise<std_msgs::Float64>("depth/state", 1);
 
   // Parameters used for calculating depth
   if (!m_nh.getParam("atmosphere/pressure", m_atmospheric_pressure))
@@ -60,6 +61,6 @@ void SimpleEstimator::pressureCallback(const sensor_msgs::FluidPressure &msg)
 {
   const float gauge_pressure = msg.fluid_pressure - m_atmospheric_pressure;
   const float depth_meters = gauge_pressure / (m_water_density * m_gravitational_acceleration);
-  m_state.pose.pose.position.z = depth_meters;
-  m_state_pub.publish(m_state);
+  depth.data = depth_meters;
+  m_depth_pub.publish(depth);
 }
