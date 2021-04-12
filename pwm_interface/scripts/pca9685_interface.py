@@ -43,15 +43,19 @@ class Pca9685InterfaceNode(object):
 
         rospy.init_node('pwm_node')
         self.pwm_sub = rospy.Subscriber('pwm_values', UInt16MultiArray, self.thrusterCallback, queue_size=1)
-        self.dpad_sub = rospy.Subscriber('joy/dpad', Int8MultiArray, self.servoCallback, queue_size=1)
+        self.dpad_sub1 = rospy.Subscriber('joy/dpad', Int8MultiArray, self.servoCallback, queue_size=1)
+        self.menu_sub = rospy.Subscriber('joy/menu_buttons', Int8MultiArray, self.ledCallback, queue_size=1)
 
         self.pca9685 = Adafruit_PCA9685.PCA9685()
         self.pca9685.set_pwm_freq(FREQUENCY)
         self.pca9685.set_all_pwm(0, 0)              # No output on initialization
         self.current_pwm = [0]*16                   # 16 PWM pins
         self.camera_pwm = 1500                      # Servo set to middle position (Looking straight forward)
+        self.brightness = 0
         self.cam_pin = 8
         self.led_pin = 9
+        self.is_on = False
+        self.previous = 0
 
         rospy.on_shutdown(self.shutdown)
 
@@ -74,10 +78,19 @@ class Pca9685InterfaceNode(object):
         # dpad.data[1] --> vertical dpad
         dpad = msg.data
 
-        while dpad[1] == 1 and dpad[0] == 0 and camera_pwm < 1750:
-            self.camera_pwm += 5
-        while dpad[1] == -1 and dpad[1] == 0 and camera_pwm > 1250:
-            self.camera_pwm -= 5
+        if dpad[1] == 1:
+            if self.camera_pwm > 2000:
+                self.camera_pwm = 2000
+            else:
+                self.camera_pwm += 100
+                
+        if dpad[1] == -1:
+            if self.camera_pwm < 1000:
+                self.camera_pwm = 1000
+            else:
+                self.camera_pwm -= 100
+                
+        print(self.camera_pwm)
 
         self.pca9685.set_pwm(self.cam_pin, PWM_ON, self.microsecs_to_bits(self.camera_pwm))
 
@@ -85,14 +98,22 @@ class Pca9685InterfaceNode(object):
     def ledCallback(self, msg):
         # dpad.data[0] --> horizontal dpad
         # dpad.data[1] --> vertical dpad
-        dpad = msg.data
+        menu = msg.data
 
-        while dpad[0] == 1 and dpad[1] == 0 and brightness < 1900:
-            self.birghtness += 10
-        while dpad[0] == -1 and dpad[1] == 0 and brightness > 1100:
-            self.brightness -= 10
+        if menu[1] == 1 and self.previous == 0:
+            if self.is_on == True:
+                self.is_on = False
+            else:
+                self.is_on = True
+                
+        if self.is_on:
+            self.brightness = 1900
+        else:
+            self.brightness = 1100
+            
+        self.previous = menu[1]
 
-        self.pca9685.set_pwm(led_pin, PWM_ON, self.microsecs_to_bits(self.brightness))
+        self.pca9685.set_pwm(self.led_pin, PWM_ON, self.microsecs_to_bits(self.brightness))
 
     def microsecs_to_bits(self, microsecs):
         duty_cycle_normalized = microsecs / PERIOD_LENGTH_IN_MICROSECONDS
