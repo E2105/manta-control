@@ -133,6 +133,8 @@ void Controller::spin()
   Eigen::Vector6d    tau_staylevel        = Eigen::VectorXd::Zero(6);
   Eigen::Vector6d    tau_depthhold        = Eigen::VectorXd::Zero(6);
   Eigen::Vector6d    tau_headinghold      = Eigen::VectorXd::Zero(6);
+  Eigen::Vector6d    tau_feedbackcontrol  = Eigen::VectorXd::Zero(6); // Added for 6d control.
+  Eigen::Vector6d    tau_guidance         = Eigen::VectorXd::zero(6); // Added for LoS Guidance.
 
   Eigen::Vector3d    position_state       = Eigen::Vector3d::Zero();
   Eigen::Quaterniond orientation_state    = Eigen::Quaterniond::Identity();
@@ -211,6 +213,15 @@ void Controller::spin()
                                     orientation_setpoint);
       tau_command = tau_openloop + tau_depthhold + tau_headinghold;
       break;
+        
+      case ControlModes::FEEDBACK_CONTROL:      // Added for 6d control
+      tau_feedbackcontrol = feedbackControl(position_state,
+                                            orientation_state,
+                                            velocity_state,
+                                            position_setpoint);
+      tau_command = tau_feedbackcontrol;
+      break;
+      
 
       default:
       ROS_ERROR("Default control mode reached.");
@@ -513,4 +524,47 @@ Eigen::Vector6d Controller::headingHold(const Eigen::Vector6d &tau_openloop,
   }
 
   return tau;
+}
+
+Eigen::Vector6d Controller::feedbackControl(const Eigen::Vector3d &position_state,
+                                            const Eigen::Quaterniond &orientation_state,
+                                            const Eigen::Vector6d &velocity_state,
+                                            const Eigen::Vector3d &position_setpoint,
+                                            const Eigen::Quaterniond &orientation_setpoint)
+{
+  Eigen::Vector6d tau;
+
+  tau = m_controller->getFeedback(position_state, orientation_state, velocity_state,
+                                  position_setpoint, orientation_setpoint);
+
+  }
+  return tau;
+}
+
+// Has feedback control to make sure the drone is in the correct heading, and depth feedback. 
+Eigen::Vector6d Controller::LoSGuidance(const Eigen::Vector3d &position_state,
+                                        const Eigen::Quaterniond &orientation_state,
+                                        const Eigen::Vector6d &velocity_state,
+                                        const Eigen::Vector3d &position_setpoint,
+                                        const Eigen::Vector3d &waypoint,
+                                        const Eigen::Vector3d &last_waypoint)
+{
+  Eigen::Vector6d tau;
+  Eigen::Quaterniond orientation_setpoint = m_guidance->getLoSRotation(position_state, velocity_state, 
+                                                                       waypoint, last_waypoint);
+
+  tau = m_controller->getFeedback(position_state, orientation_state, velocity_state,
+                                  position_setpoint, orientation_setpoint);
+  
+  // Gives error in rotation.
+  Eigen::Quaterniond q_tilde = orientation_setpoint.conjugate()*orientation_state;
+  q_tilde.normalize();
+  
+  tau(sway) = 0;
+  if (abs(q_tilde.z())< 0.4)  // If error angle is more than ~45 degrees no surge.
+    tau(SURGE) = 1; //Find a fitting surge value. Maybe adjustable.
+  else
+    tau(surge) = 0;
+  return tau;
+
 }
