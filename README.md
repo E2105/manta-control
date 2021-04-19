@@ -28,43 +28,31 @@ Camera tilt and light brightness are controlled manually from the output of the 
 
 The **vortex** package contains all the relevant configuration and launch files for our system.
 
+# Implementation on the Shoreside Computer
 
-# Implementation on the Raspberry Pi 4
+## Ubuntu Desktop 18.04 LTS
 
-The entire control system runs on a Raspberry Pi 4 4GB on the drone. We have chosen Ubuntu Mate as the OS to keep the ubuntu functionality while having access to the GPIO pins without any hassle. The OS runs slower than normal Ubuntu server, and only the newest version of Ubuntu is available (20.04 LTS). This is an awkward middleground since much of the tools we're using in ROS are only officially supported on version 18.04 of Ubuntu, and many developers has already begun to work on ROS2. But thanks to the modular strength of ROS it works out.
-
-# Complete Setup
-
-You only need a working Linux desktop running Ubuntu 18.04 LTS.
-
-Tip: Copy/paste in the Ubuntu terminal is by default
-```
-Ctrl + Shift + C
-```
-```
-Ctrl + Shift + V
-```
-
+We are using Ubuntu 18.04 and ROS Melodic on the shoreside computer. This PC runs the GUI and graphical tools if needed. Most useful tools are only officially supported up to ROS Melodic, but usually works on ROS Noetic.
 
 ## 1. ROS Melodic
 
 Detailed walkthrough: http://wiki.ros.org/melodic/Installation/Ubuntu
 
-Quick setup:
+Quick setup (Only follow this if you know what each command does):
 
-1. Set up sources.list
+1. Sources and keys
 
 ```
 sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
 ```
-
-2. Set up keys
 
 ```
 sudo apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
 ```
 
 3. Install ROS
+
+Grabbing the full desktop versions since a normal laptop should be able to handle it well.
 
 ```
 sudo apt update
@@ -74,20 +62,20 @@ sudo apt update
 sudo apt install ros-melodic-desktop-full
 ```
 
-4. Set up environment variables
+4. Environment variables
 
 ```
 echo "source /opt/ros/melodic/setup.bash" >> ~/.bashrc
 source ~/.bashrc
 ```
 
-5. Install dependencies
+5. Dependancies
 
 ```
 sudo apt install python-rosdep python-rosinstall python-rosinstall-generator python-wstool build-essential
 ```
 
-5.1 Initialize rosdep
+5 rosdep
 
 ```
 sudo apt install python-rosdep
@@ -98,22 +86,36 @@ sudo rosdep init
 rosdep update
 ```
 
-## 2. Dependancies
+## 2. Other dependancies
+
+2.1 To connect to the webviz GUI
 
 ```
-sudo apt install protobuf-compiler ros-melodic-rosbridge-server ros-melodic-message-to-tf ros-melodic-geographic-msgs ros-melodic-move-base ros-melodic-move-base-msgs
+sudo apt install ros-melodic-rosbridge-server
+```
+
+2.2 The joystick package
+
+```
+sudo apt install ros-melodic-joy
+```
+
+2.3 Other dependancies
+
+```
+sudo apt install protobuf-compiler ros-melodic-message-to-tf ros-melodic-geographic-msgs ros-melodic-move-base ros-melodic-move-base-msgs
 ```
 
 ## 3. ROS Workspace
 
-0. Catkin tools
+1. Catkin tools
 
 ```
 sudo apt-get update
 sudo apt-get install python-catkin-tools
 ```
 
-1. The catkin workspace
+2. The catkin workspace
 
 ```
 mkdir -p ~/catkin_ws/src
@@ -121,7 +123,7 @@ cd ~/catkin_ws
 catkin init
 ```
 
-2. Build the workspace
+3. Build the workspace
 
 ```
 cd ~/catkin_ws
@@ -134,58 +136,10 @@ catkin build
 echo 'source $HOME/catkin_ws/devel/setup.bash' >> ~/.bashrc
 ```
 
-4. Close current terminal
 
-## 4. The UUV simulator
+## Custom Message Class for the Water Linked Underwater GPS
 
-1. Enter the package folder and clone the repository from their github
-
-```
-cd ~/catkin_ws/src
-git clone https://github.com/uuvsimulator/uuv_simulator.git
-```
-
-2. Run this to add the lines sourcing the environment variables to `~/.bashrc`. (The environmen variables for ROS and the workspace are already sourced)
-
-```
-echo 'source /usr/share/gazebo-9/setup.sh' >> ~/.bashrc
-```
-
-3. Source the `.bashrc`
-
-```
-source ~/.bashrc
-```
-3.1. Trouble because of another workspace? Try this
-
-```
-source ~/catkin_ws/devel/setup.bash
-```
-
-4. Build the workspace
-
-```
-cd ~/catkin_ws
-catkin build
-```
-
-## 5. The Manta Gazebo Model
-
-1. Enter the package folder and clone the repository from github
-
-```
-cd ~/catkin_ws/src
-git clone https://github.com/napahlm/manta-model.git
-```
-
-2. Build the packages
-
-```
-cd ~/catkin_ws
-catkin build
-```
-
-## The Vortex Messages Package
+We are mostly using default messages, but to work well with the Water Linked system a custom emssage was created.
 
 1. Enter the package folder and clone the repository from github
 
@@ -201,35 +155,11 @@ cd ~/catkin_ws
 catkin build
 ```
 
-## The Manta Control System
 
-1. Enter the package folder and clone the repository from github
 
-```
-cd ~/catkin_ws/src
-git clone https://github.com/napahlm/manta-rov.git
-```
+# Implementation on the Raspberry Pi 4
 
-2. Build the packages. Make sure "vortex_msgs" is built first.
-
-```
-cd ~/catkin_ws
-catkin build
-```
-
-## Running Different Tests
-
-1. Spawn Manta in a default world to test the simulator (Control system and vortex_msgs NOT needed)
-
-```
-roslaunch manta_gazebo start_demo.launch
-```
-
-2. Test the control system (Spawn the world and Manta first)
-
-```
-roslaunch vortex simulator.launch DOESNT WORK YET
-```
+The entire control system runs on a Raspberry Pi 4 4GB on the drone. We have chosen Ubuntu Mate as the OS to keep the ubuntu functionality while having access to the GPIO pins without any hassle. The OS runs slower than normal Ubuntu server, and only the newest version of Ubuntu is available (20.04 LTS). This is an awkward middleground since much of the tools we're using in ROS are only officially supported on version 18.04 of Ubuntu, and many developers has already begun to work on ROS2. But thanks to the modular strength of ROS it works out.
 
 # Running the Control System on the Raspberry Pi 4
 
