@@ -161,21 +161,6 @@ catkin build
 
 The entire control system runs on a Raspberry Pi 4 4GB on the drone. We have chosen Ubuntu Mate as the OS to keep the ubuntu functionality while having access to the GPIO pins without any hassle. The OS runs slower than normal Ubuntu server, and only the newest version of Ubuntu is available (20.04 LTS). This is an awkward middleground since much of the tools we're using in ROS are only officially supported on version 18.04 of Ubuntu, and many developers has already begun to work on ROS2. But thanks to the modular strength of ROS it works out.
 
-# Running the Control System on the Raspberry Pi 4
-
-The Raspberry Pi is running Ubuntu Mate 20.04 and ROS Noetic.
-This seems to be the only stable and maintained option as the right version of Ubuntu 18.04 for RPi4 is hard to find.
-
-Known challenges running ROS Noetic on a system developed on ROS Melodic:
-
-1. Noetic uses Python3, Melodic uses Python 2.7 (Denoted Python in scripts). Make sure to either configure your Python Path to run Python3 when Python is called, or change Python to Python3 in all ROS python scripts in the first line. (i.e. #!/usr/bin/env python --> #!/usr/bin/env python3)
-
-Known challenges running ROS on the RPi4:
-
-1. Usually ROS is installed without many dependancies because of the weaker processor. These will be added in a list below.
-
-2. Access to the GPIO pins is by default done through the Raspberry Pi OS, but can be done easily on Ubuntu Mate. Normal Ubuntu versions lacks the permissions accessing the pins.
-
 ## Setup
 
 1. Ubuntu Mate
@@ -196,6 +181,10 @@ sudo apt install openssh-server
 ```
 
 Enable SSH.
+
+```
+sudo systemctl enable ssh
+```
 
 ```
 sudo ufw allow ssh
@@ -219,10 +208,6 @@ Only install *ros-base* on the Pi since the graphical tools isn't really needed 
 
 http://wiki.ros.org/noetic/Installation/Ubuntu
 
-2.4 Install general dependancies
-
-Some generally needed dependancies are not installed by default. This is either because *ros-base* excludes some specific packages, or that it is installed on an ARM architecture.
-
 Install rosdep too:
 
 ```
@@ -233,6 +218,26 @@ sudo apt install python3-rosdep
 sudo rosdep init
 rosdep update
 ```
+
+Configure the workspace using catkin tools.
+
+We are using *catkin tools* to work with our workspace.
+
+```
+sudo apt install python3-catkin-tools
+```
+
+Create the workspace and intialize it.
+
+```
+mkdir -p ~/catkin_ws/src
+cd ~/catkin_ws/
+catkin init
+```
+
+2.4 Install general dependancies
+
+Some generally needed dependancies are not installed by default. This is either because *ros-base* excludes some specific packages, or that it is installed on an ARM architecture.
 
 Package: "osrf-common"
 
@@ -249,7 +254,7 @@ sudo apt install python-is-python3
 Programs for configuring the GPIO pins (Might not be needed)
 
 ```
-sudo apt install libi2c-dev
+sudo apt install i2c-tools
 ```
 
 Git for version control
@@ -257,6 +262,8 @@ Git for version control
 ```
 sudo apt install git
 ```
+
+### Camera
 
 Camera packages for ROS
 
@@ -276,14 +283,20 @@ Viewing the image produced
 sudo apt-get install ros-noetic-image-view
 ```
 
-Needed for the controller
+The camera package
+
+```
+sudo apt install ros-noetic-usb-cam
+```
+
+### Needed for the controller
 
 ```
 sudo apt install ros-noetic-eigen-conversions
 ```
 
 ```
-sudo apt install ros-noetic-tf ???
+sudo apt install ros-noetic-tf
 ```
 
 ```
@@ -296,22 +309,12 @@ The default joystick package
 sudo apt install ros-noetic-joy
 ```
 
+### GPIO Libraries
 
-3. Configure the workspace using catkin tools.
+Install these in the home folder.
 
-We are using *catkin tools* to work with our workspace.
+"Adafruit_Python_PCA9685" and "Adafruit_Python_GPIO".
 
-```
-sudo apt install python3-catkin-tools
-```
-
-Create the workspace and intialize it.
-
-```
-mkdir -p ~/catkin_ws/src
-cd ~/catkin_ws/
-catkin init
-```
 
 4. Clone the custom message system.
 
@@ -335,6 +338,6 @@ catkin build vortex_msgs
 catkin build
 ```
 
-8. Run some tests
+7. Run some tests
 
 Launch files.
