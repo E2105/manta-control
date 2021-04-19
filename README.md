@@ -1,32 +1,37 @@
-# Manta Control System
+# The Manta Control System
 
-Branch test.
+## Background
 
-**actuators**: lights and camera servo
+Manta is an ROV designed and developed by Vortex NTNU, a student organization at NTNU Trondheim. It is able to move in 6 degrees of freedom with a total of 8 thrusters, half of them thrusting vertically, and the other half horizontally. It has a uniquely flat design similar to a manta ray, hence the name, and making it very stable control-wise.
 
-**allocator**: allocates to thrusters
+This control system has taken inspiration from the Vortex NTNU github found at https://github.com/vortexntnu. This variant of the system has been developed in close cooperation with the organization.
 
-**camera**: raw camera feed
+## Theory
 
-**controller**: controlling regulator
+The control system is designed as a straight-forward SISO feedback system even though it has 8 actuators. The actual allocation of forces is done in a node after the controller. Much of the dynamics for our specific vehicle has been covered in a master thesis by Kristoffer Solber. [LINK?]
 
-**estimator**: state estimation
+## The Open Loop
 
-**framework**: config and launch files
+In normal ROV operation the setpoint is set by the connected joystick. We're running the default package **joy** on the shoreside computer to read the inputs from an Xbox controller. The **joystick_interface** remaps all the button clicks to what is considered smooth and straightforward control. This goes striaght into the controller.
 
-**joystick**: custom joystick mapping
+The **controller**'s inputs are the from the joystick and the sensors. It has several mode to control depth and heading if needed. The output of the controller is forces and torque in 3 dimensions to get the drone, represented as a body frame, to where it wants it to be. This is the input of the **allocator** which allocates the forces to each thruster based on their placement. Ideally, this is the only thing one should need to change if the control system were to be used on another drone.
 
-**pwm**: sends PWM to board
+The **thruster_interface** interpolates the forces for each thrusters and converts it to a PWM signal between 1100 and 1900 us. The **pca9865_interface** writes this to the right GPIO pin connected to the ESC's. The functions of these two nodes are similar, but are kept separate for testing purposes.
 
-**sensors**: raw data from pressure sensor and IMU
+## The Feedback Loop
 
-**thrusters**: converts joystick signals to needed forces
+Each sensor has a driver. The Bar30 pressure sensor node is created from its Adafruit library, and the IMU uses the **mti_xsens_driver**. Both these two are sent to an observer/estimator to be merged to a single signal for the controller.
+
+## Other functions
+
+Camera tilt and light brightness are controlled manually from the output of the **joystick_interface**.
+
+The **vortex** package contains all the relevant configuration and launch files for our system.
 
 
-Will add a customized UUV simulator later.
+# Implementation on the Raspberry Pi 4
 
-Known problems:
-1. Gazebo doesn't shut down (or takes way too long) when you kill the node which started the program. Rapid use of the `roslaunch` command and killing it again might therefore not work, and new simulations are waiting indefinitely for the last one to shut down. *Restarting your PC seems to work fine.*
+The entire control system runs on a Raspberry Pi 4 4GB on the drone. We have chosen Ubuntu Mate as the OS to keep the ubuntu functionality while having access to the GPIO pins without any hassle. The OS runs slower than normal Ubuntu server, and only the newest version of Ubuntu is available (20.04 LTS). This is an awkward middleground since much of the tools we're using in ROS are only officially supported on version 18.04 of Ubuntu, and many developers has already begun to work on ROS2. But thanks to the modular strength of ROS it works out.
 
 # Complete Setup
 
@@ -243,11 +248,15 @@ Known challenges running ROS on the RPi4:
 
 ## Setup
 
-0. Ubuntu Mate?
+1. Ubuntu Mate
 
-Wait for packages to finish installing (unattended-upgr). Takes a lot of time
+Write Ubuntu Mate 20.04 LTS to a SD card and boot the Raspberry Pi. It will try to upgrade all software to newest versions, which will take a while, so a wired internet connection should be considered. You cannot install other programs while this is happening and the terminal will just tell you that the thread is used for *unattended-upgr*.
 
-Activating SSH:
+Remember that Ubuntu 20.04 uses Python 3 by default, and earlier Ubuntu versions uses Python 2. Dependancies regarding this is covered further down.
+
+2. All the basics
+
+2.1 Activate SSH with OpenSSH:
 
 ```
 sudo apt update
@@ -256,44 +265,35 @@ sudo apt update
 sudo apt install openssh-server
 ```
 
-Verify that it's running with this:
-
-```
-sudo systemctl status ssh
-```
-
 Enable SSH.
 
 ```
 sudo ufw allow ssh
 ```
 
-Configure a static IP and SSH:
+Verify that it's running with this:
 
-[COMING]
+```
+sudo systemctl status ssh
+```
 
 
-1. Install ros-base. Only consider ros-desktop for troubleshooting graphical tools.
+2.2 Configure a static IP
+
+It is always ann advantage to change to a static IP on the same subent as your other devices it will communicate with. On Ubuntu Mate you need a display, keyboard and mouse to change the settings like a normal dekstop PC. If you absolutely need a DHCP to get an internet connection, one can for example have wifi with DHCP, and static IP on ethernet.
+
+
+2.3 Install ROS
+
+Only install *ros-base* on the Pi since the graphical tools isn't really needed and takes up unecessary space.
 
 http://wiki.ros.org/noetic/Installation/Ubuntu
 
-2. Install the dependencies specific for RPi4.
+2.4 Install general dependancies
 
-"osrf-common" is not automatically installed on RPi Ubuntu (Might be the ARM structure)
+Some generally needed dependancies are not installed by default. This is either because *ros-base* excludes some specific packages, or that it is installed on an ARM architecture.
 
-```
-sudo apt install python3-catkin-tools python3-osrf-common
-```
-
-"python-is-python3"
-
-Programs for configuring the GPIO pins (libi2c-dev ?)
-
-```
-sudo apt install python-is-python3
-```
-
-rosdep
+Install rosdep too:
 
 ```
 sudo apt install python3-rosdep
@@ -304,31 +304,49 @@ sudo rosdep init
 rosdep update
 ```
 
-Git
+Package: "osrf-common"
+
+```
+sudo apt install python3-catkin-tools python3-osrf-common
+```
+
+Run Python 3 as Python 2: "python-is-python3"
+
+```
+sudo apt install python-is-python3
+```
+
+Programs for configuring the GPIO pins (Might not be needed)
+
+```
+sudo apt install libi2c-dev
+```
+
+Git for version control
 
 ```
 sudo apt install git
 ```
 
-Camera
+Camera packages for ROS
 
 ```
 sudo apt-get install ros-noetic-image-transport ros-noetic-camera-info-manager libavcodec-dev libswscale-dev
 ```
 
-... Video4Linux utilities
+Video4Linux utilities
 
 ```
 sudo apt-get install v4l-utils
 ```
 
-Viewing the image (When this is installed image_raw topic is shown as video instead of numbers automatically)
+Viewing the image produced
 
 ```
 sudo apt-get install ros-noetic-image-view
 ```
 
-Other
+Needed for the controller
 
 ```
 sudo apt install ros-noetic-eigen-conversions
@@ -342,7 +360,7 @@ sudo apt install ros-noetic-tf ???
 sudo apt install ros-noetic-roslint
 ```
 
-Packages: joy
+The default joystick package
 
 ```
 sudo apt install ros-noetic-joy
@@ -351,27 +369,35 @@ sudo apt install ros-noetic-joy
 
 3. Configure the workspace using catkin tools.
 
+We are using *catkin tools* to work with our workspace.
+
+```
+sudo apt install python3-catkin-tools
+```
+
+Create the workspace and intialize it.
+
 ```
 mkdir -p ~/catkin_ws/src
 cd ~/catkin_ws/
 catkin init
 ```
 
-4. Install the message class
+4. Clone the custom message system.
 
 ```
 cd ~/catkin_ws/src
 git clone git clone https://github.com/vortexntnu/vortex_msgs.git
 ```
 
-5. Install the ROV Control System.
+5. Clone the control system.
 
 ```
 cd ~/catkin_ws/src
 git clone https://github.com/USERNAME/REPO.git
 ```
 
-6. Build the packages
+6. Build the workspace. Build the message package first if any other package is dependant on it.
 
 ```
 cd ~/catkin_ws
@@ -381,4 +407,4 @@ catkin build
 
 8. Run some tests
 
-[Tests are coming.]
+Launch files.
