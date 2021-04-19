@@ -49,9 +49,12 @@
       <rosparam command="load" file="$(find xsens_mti_driver)/param/xsens_mti_node.yaml" />
   </node>
 
+<<<<<<< HEAD
   <!--<node pkg="rosserial_python"    type="serial_node.py" name="rosserial" output="screen">
     <param name="port" value="/dev/ttyUSB1" />
     <param name="baud" value="57600" />
   </node>-->
 
+=======
+>>>>>>> a33e605d22d4c9f3941c85aa5465309da2359022
 </launch>
