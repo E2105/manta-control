@@ -60,6 +60,6 @@ void SimpleEstimator::pressureCallback(const sensor_msgs::FluidPressure &msg)
 {
   const float gauge_pressure = msg.fluid_pressure - m_atmospheric_pressure;
   const float depth_meters = gauge_pressure / (m_water_density * m_gravitational_acceleration);
-  m_state.pose.pose.position.z = depth_meters;
+  m_state.pose.pose.position.z = -depth_meters;
   m_state_pub.publish(m_state);
 }

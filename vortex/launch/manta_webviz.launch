@@ -17,11 +17,12 @@
     rosparam: Reads parameter file (.yaml)
   -->
 
-
   <!-- Configuration files -->
   <rosparam command="load" file="$(find vortex)/config/robots/manta.yaml"/>
   <rosparam command="load" file="$(find thruster_interface)/config/thruster_terrapin.yaml" />
   <rosparam command="load" file="$(find vortex)/config/environments/trondheim_freshwater.yaml"/>
+  <rosparam command="load" file="$(find xsens_mti_driver)/param/xsens_mti_node.yaml" />
+
 
   <!-- Node parameters -->
   <param name="thruster_interface/thrusters_connected"    value="false"           type="bool"/>
@@ -45,9 +46,8 @@
   <node pkg="topic_tools"         type="throttle"                  name="joy_throttler"       output="screen"     args="messages /joy 20"/>
   <node pkg="joystick_interface"  type="joystick_interface.py"     name="joystick_interface"  output="screen"/>
   
-  <node  name="xsens_mti_node" pkg="xsens_mti_driver" type="xsens_mti_node" output="screen">
-      <rosparam command="load" file="$(find xsens_mti_driver)/param/xsens_mti_node.yaml" />
-  </node>
+  <node pkg="xsens_mti_driver"    type="xsens_mti_node"            name="xsens_mti_node"      output="screen"/>
+    <param name="port" value="$(arg imu_port)"/>
 
   <!--<node pkg="rosserial_python"    type="serial_node.py" name="rosserial" output="screen">
     <param name="port" value="/dev/ttyUSB1" />

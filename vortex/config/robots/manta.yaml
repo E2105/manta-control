@@ -18,7 +18,7 @@
 #
 
 physical:
-  mass_kg: 0
+  mass_kg: 18
   displacement_m3: 0
   center_of_mass: [0, 0, 0]
   center_of_buoyancy: [0, 0, 0]
@@ -65,7 +65,7 @@ propulsion:
        [-0.29000, -0.00000, -0.00000,  0.29000, -0.29000,  0.00000,  0.00000, 0.29000]] # Yaw
   command:
     wrench:
-      max:     [33.9, 33.9, 48.0, 7.6, 3.2, 9.9]
+      max:     [60.0, 60.0, 80.0, 12.0, 7.0, 18.0]
       scaling: [ 0.4,  0.4,  0.6, 0.3, 0.7, 0.4]
 
 controller:
