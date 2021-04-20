@@ -17,11 +17,12 @@
     rosparam: Reads parameter file (.yaml)
   -->
 
-
   <!-- Configuration files -->
   <rosparam command="load" file="$(find vortex)/config/robots/manta.yaml"/>
   <rosparam command="load" file="$(find thruster_interface)/config/thruster_terrapin.yaml" />
   <rosparam command="load" file="$(find vortex)/config/environments/trondheim_freshwater.yaml"/>
+  <rosparam command="load" file="$(find xsens_mti_driver)/param/xsens_mti_node.yaml" />
+
 
   <!-- Node parameters -->
   <param name="thruster_interface/thrusters_connected"    value="false"           type="bool"/>
@@ -39,33 +40,18 @@
 
   <!-- PERIPHERAL NODES interfacing WITH hardware -->
 
-<<<<<<< HEAD
-  <node pkg="pwm_interface"        type="pca9685_interface.py"      name="pwm_interface"       output="screen"     respawn="true"/>
-  <node pkg="sensor_interface"     type="ms5837_interface.py"       name="sensor_interface"    output="screen"     respawn="true"/>
-  <node pkg="joy"                  type="joy_node"                  name="joy"                 output="screen"/>
-  <node pkg="topic_tools"          type="throttle"                  name="joy_throttler"       output="screen"     args="messages /joy 20"/>
-  <node pkg="joystick_interface"   type="joystick_interface.py"     name="joystick_interface"  output="screen"/>
-  <node pkg="rosserial_python"     type="serial_node.py"            name="serial_node">
-    <param name="port" value="/dev/ttyUSB0"/>
-    <param name="baud" value="57600"/>
-=======
   <node pkg="pwm_interface"       type="pca9685_interface.py"      name="pwm_interface"       output="screen"     respawn="true"/>
   <node pkg="sensor_interface"    type="ms5837_interface.py"       name="sensor_interface"    output="screen"     respawn="true"/>
   <node pkg="joy"                 type="joy_node"                  name="joy"                 output="screen"/>
   <node pkg="topic_tools"         type="throttle"                  name="joy_throttler"       output="screen"     args="messages /joy 20"/>
   <node pkg="joystick_interface"  type="joystick_interface.py"     name="joystick_interface"  output="screen"/>
   
-  <node  name="xsens_mti_node" pkg="xsens_mti_driver" type="xsens_mti_node" output="screen">
-      <rosparam command="load" file="$(find xsens_mti_driver)/param/xsens_mti_node.yaml" />
->>>>>>> 4112fdd902145ee5cf258c4f4a93c7f8d98e8676
-  </node>
+  <node pkg="xsens_mti_driver"    type="xsens_mti_node"            name="xsens_mti_node"      output="screen"/>
+    <param name="port" value="$(arg imu_port)"/>
 
-<<<<<<< HEAD
   <!--<node pkg="rosserial_python"    type="serial_node.py" name="rosserial" output="screen">
     <param name="port" value="/dev/ttyUSB1" />
     <param name="baud" value="57600" />
   </node>-->
 
-=======
->>>>>>> a33e605d22d4c9f3941c85aa5465309da2359022
 </launch>

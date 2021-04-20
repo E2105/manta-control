@@ -18,7 +18,7 @@ OSR_4096 = 4
 OSR_8192 = 5
 
 # kg/m^3 convenience
-DENSITY_FRESHWATER = 997
+DENSITY_FRESHWATER = 1000
 DENSITY_SALTWATER = 1029
 
 # Conversion factors (from native unit, mbar)
@@ -123,8 +123,8 @@ class MS5837(object):
 
         return True
 
-    def setFluidDensity(self, denisty):
-        self._fluidDensity = denisty
+    def setFluidDensity(self, density):
+        self._fluidDensity = density
 
     # Pressure in requested units
     # mbar * conversion
@@ -141,10 +141,12 @@ class MS5837(object):
             return degC - 273
         return degC
     
-    #TODO: Blir beregnet i estimator. Vurder å fjerne en beregning.  
     # Depth relative to MSL pressure in given fluid density
-    def depth(self):
-        return (self.pressure(UNITS_Pa)-101300)/(self._fluidDensity*9.80665)
+    def depth(self, atm_pressure=101300, gravity=9.81):
+        """ Calculates the depth based on the measured pressure.
+        Modification: Calculates depth based on local atm. pressure and gravity.
+        """
+        return (self.pressure(UNITS_Pa)-atm_pressure)/(self._fluidDensity*gravity)
 
     # Altitude relative to MSL pressure
     def altitude(self):
