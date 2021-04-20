@@ -60,11 +60,3 @@ void SimpleEstimator::pressureCallback(const sensor_msgs::FluidPressure &msg)
   m_state.pose.pose.position.z = depth_meters;                                        // standardized
   m_state_pub.publish(m_state);
 }
-
-void SimpleEstimator::positionCallback(const sensor_msgs::UwGPS &msg)  //Added for UW GPS
-{
-  sudo read from WaterLinked system and add to m_state  //Added for UW GPS
-  m_state.pose.pose.position.x = ???;  //Added for UW GPS
-  m_state.pose.pose.position.y = ???;  //Added for UW GPS
-  m_state_pub.publish(m_state);  //Added for UW GPS
-}
