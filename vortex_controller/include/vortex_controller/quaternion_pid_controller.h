@@ -11,8 +11,7 @@
  * expanded to a PID controller.
 */
 
-#ifndef VORTEX_CONTROLLER_QUATERNION_PD_CONTROLLER_H
-#define VORTEX_CONTROLLER_QUATERNION_PD_CONTROLLER_H
+#pragma once
 #include <math.h>
 #include <cstdlib>
 #include <Eigen/Dense>
@@ -213,4 +212,3 @@ private:
 };
 
 
-#endif  // VORTEX_CONTROLLER_QUATERNION_PD_CONTROLLER_H
