@@ -5,8 +5,8 @@
 
 SimpleEstimator::SimpleEstimator()
 {
-  // Initiating topics
-  m_imu_sub      = m_nh.subscribe("/sensors/imu/data", 1, &SimpleEstimator::imuCallback, this);
+  // Initiating subscribers and publishers
+  m_imu_sub      = m_nh.subscribe("/imu/data", 1, &SimpleEstimator::imuCallback, this);
   m_depth_sub    = m_nh.subscribe("/sensors/depth", 1, &SimpleEstimator::pressureCallback, this);
   m_state_pub    = m_nh.advertise<nav_msgs::Odometry>("estimator/state", 1);
 
@@ -22,8 +22,8 @@ SimpleEstimator::SimpleEstimator()
 
 void SimpleEstimator::imuCallback(const sensor_msgs::Imu &msg)
 {
-  // The IMU publishes the orientation in quaternions and this function
-  // ensures that they are represented as a NED body frame.
+  // ENU to NED transformation
+  // Swap X and Y, invert Z
 
   // Converting the quaternion representation to Euler angles
   Eigen::Quaterniond quat_imu;
