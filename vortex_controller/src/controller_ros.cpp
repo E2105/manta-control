@@ -121,7 +121,7 @@ void Controller::stateCallback(const nav_msgs::Odometry &msg)
 void Controller::configCallback(const vortex_controller::VortexControllerConfig &config, uint32_t level)
 {
   ROS_INFO_STREAM("Setting gains: [vel = " << config.velocity_gain << ", pos = " << config.position_gain
-    << ", rot = " << config.attitude_gain << "]");
+    << ", rot = " << config.attitude_gain << ", int = " << config.integral_gain <<"]");
   m_controller->setGains(config.velocity_gain, config.position_gain, config.attitude_gain, config.integral_gain);
 }
 
@@ -298,6 +298,8 @@ void Controller::initPositionHoldController()
     ROS_ERROR("Failed to read parameter position_gain.");
   if (!m_nh.getParam("/controller/attitude_gain", c))
     ROS_ERROR("Failed to read parameter attitude_gain.");
+  if (!m_nh.getParam("/controller/integral_gain", i))
+    ROS_ERROR("Failed to read parameter integral_gain.");
 
   // Read center of gravity and buoyancy vectors
   std::vector<double> r_G_vec, r_B_vec;
