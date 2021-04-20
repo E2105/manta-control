@@ -29,8 +29,8 @@
 
   <!-- PERIPHERAL NODES interfacing WITH hardware -->
 
-  <node pkg="pwm_interface"        type="pca9685_interface.py"      name="pwm_interface"       output="screen"     respawn="true"/>
-  <node pkg="sensor_interface"     type="ms5837_interface.py"       name="sensor_interface"    output="screen"     respawn="true"/>
+  <!--<node pkg="pwm_interface"        type="pca9685_interface.py"      name="pwm_interface"       output="screen"     respawn="true"/>-->
+  <!--<node pkg="sensor_interface"     type="ms5837_interface.py"       name="sensor_interface"    output="screen"     respawn="true"/>-->
   <node pkg="joy"                  type="joy_node"                  name="joy"                 output="screen"/>
   <node pkg="topic_tools"          type="throttle"                  name="joy_throttler"       output="screen"     args="messages /joy 20"/>
   <node pkg="joystick_interface"   type="joystick_interface.py"     name="joystick_interface"  output="screen"/>
@@ -38,5 +38,8 @@
     <param name="port" value="/dev/ttyUSB0"/>
     <param name="baud" value="57600"/>
   </node>
+
+  <!-- The node getting the WL info from the Otter -->
+  <include file="$(find obs_interface)/launch/obs_interface.launch" />
 
 </launch>
