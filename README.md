@@ -1,5 +1,13 @@
 # The Manta Control System
 
+## Summary
+
+Used with:
+* vortex_msgs
+* xsens_mti_driver
+* battery-monitor
+* obs_interface
+
 ## Background
 
 Manta is an ROV designed and developed by Vortex NTNU, a student organization at NTNU Trondheim. It is able to move in 6 degrees of freedom with a total of 8 thrusters, half of them thrusting vertically, and the other half horizontally. It has a uniquely flat design similar to a manta ray, hence the name, and making it very stable control-wise.
