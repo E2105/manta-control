@@ -83,6 +83,7 @@ private:
   Eigen::Vector6d feedbackControl(const Eigen::Vector3d &position_state,          // Added for semi-autonomy
                                   const Eigen::Quaterniond &orientation_state,
                                   const Eigen::Vector6d &velocity_state,
+                                  const Eigen::Vector3d &position_setpoint,
                                   const Eigen::Quaterniond &orientation_setpoint);
 };
 
