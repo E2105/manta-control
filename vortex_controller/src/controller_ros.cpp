@@ -122,7 +122,7 @@ void Controller::configCallback(const vortex_controller::VortexControllerConfig 
 {
   ROS_INFO_STREAM("Setting gains: [vel = " << config.velocity_gain << ", pos = " << config.position_gain
     << ", rot = " << config.attitude_gain << "]");
-  m_controller->setGains(config.velocity_gain, config.position_gain, config.attitude_gain);
+  m_controller->setGains(config.velocity_gain, config.position_gain, config.attitude_gain, config.integral_gain);
 }
 
 void Controller::spin()
@@ -291,7 +291,7 @@ void Controller::updateSetpoint(PoseIndex axis)   // Only updates z axis and aro
 void Controller::initPositionHoldController()
 {
   // Read controller gains from parameter server
-  double a, b, c;
+  double a, b, c, i;
   if (!m_nh.getParam("/controller/velocity_gain", a))
     ROS_ERROR("Failed to read parameter velocity_gain.");
   if (!m_nh.getParam("/controller/position_gain", b))
