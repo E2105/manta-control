@@ -322,7 +322,7 @@ void Controller::initPositionHoldController()
   double B = density_of_water * displacement * acceleration_of_gravity;
 
   //makes quaternionPdController
-  m_controller.reset(new QuaternionPdController(a, b, c, W, B, r_G, r_B));
+  m_controller.reset(new QuaternionPdController(a, b, c, i, W, B, r_G, r_B));
 }
 
 bool Controller::healthyMotionMessage(const geometry_msgs::Twist& msg)
