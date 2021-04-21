@@ -10,6 +10,7 @@
 #include "sensor_msgs/Imu.h"
 #include "std_msgs/Float64.h"
 #include "nav_msgs/Odometry.h"
+#include <string>
 
 class SimpleEstimator
 {
@@ -24,6 +25,7 @@ class SimpleEstimator
     ros::Subscriber m_depth_sub;
     ros::Publisher  m_state_pub;
 
+    bool m_ned_frame = false;
     const double c_pi = 3.141592653589793;
 
     nav_msgs::Odometry m_state;

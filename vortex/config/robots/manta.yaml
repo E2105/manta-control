@@ -18,6 +18,7 @@
 #
 
 physical:
+  ned_frame: true    # NED: true, ENU: false
   mass_kg: 18
   displacement_m3: 0
   center_of_mass: [0, 0, 0]
@@ -55,7 +56,7 @@ propulsion:
   thrusters:
     num: 8
     map: [0, 1, 2, 3, 4, 5, 6, 7]
-    direction: [1, 1, 1, 1, 1, 1, 1, 1] # double check
+    direction: [1, 1, 1, 1, 1, 1, 1, 1]
     configuration_matrix:
       [[ 0.70711,  0.00000,  0.00000, -0.70711, -0.70711,  0.00000,  0.00000, 0.70711], # Surge
        [-0.70711,  0.00000,  0.00000, -0.70711,  0.70711,  0.00000,  0.00000, 0.70711], # Sway
