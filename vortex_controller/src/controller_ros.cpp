@@ -569,6 +569,5 @@ Eigen::Vector6d Controller::feedbackControl(const Eigen::Vector3d &position_stat
   tau = m_controller->getFeedback(position_state, orientation_state, velocity_state,
                                   position_setpoint, orientation_setpoint);
 
-  }
   return tau;
 }
