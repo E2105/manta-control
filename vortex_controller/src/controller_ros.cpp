@@ -210,7 +210,12 @@ void Controller::spin()
                                             orientation_setpoint);
       tau_command = tau_feedbackcontrol;
       break;
-
+        
+      case ControlModes::BRIEFCASE_MODE:
+      tau_briefcasemode = briefcaseMode(orientation_state, velocity_state);
+      tau_command = tau_openloop + tau_briefcasemode;
+      break;
+      
       default:
       ROS_ERROR("Default control mode reached.");
       break;
@@ -456,6 +461,35 @@ Eigen::Vector6d Controller::stayLevel(const Eigen::Quaterniond &orientation_stat
 
   return tau;
 }
+
+Eigen::Vector6d Controller::briefcaseMode(const Eigen::Quaterniond &orientation_state,
+                                          const Eigen::Vector6d &velocity_state)
+{
+  // Convert quaternion setpoint to euler angles (ZYX convention)
+  Eigen::Vector3d euler;
+  euler = orientation_state.toRotationMatrix().eulerAngles(2, 1, 0);
+
+  // Set pitch and roll setpoints to zero
+  euler(EULER_PITCH) = 0;
+  euler(EULER_ROLL)  = 1.57;
+
+  // Convert euler setpoint back to quaternions
+  Eigen::Matrix3d R;
+  R = Eigen::AngleAxisd(euler(EULER_YAW),   Eigen::Vector3d::UnitZ())
+    * Eigen::AngleAxisd(euler(EULER_PITCH), Eigen::Vector3d::UnitY())
+    * Eigen::AngleAxisd(euler(EULER_ROLL),  Eigen::Vector3d::UnitX());
+  Eigen::Quaterniond orientation_briefcase(R);
+
+  Eigen::Vector6d tau = m_controller->getFeedback(Eigen::Vector3d::Zero(), orientation_state, velocity_state,
+                                                Eigen::Vector3d::Zero(), orientation_briefcase);
+
+  tau(ROLL)  = 0;
+  tau(PITCH) = 0;
+
+  return tau;
+}
+
+
 
 Eigen::Vector6d Controller::depthHold(const Eigen::Vector6d &tau_openloop,
                                       const Eigen::Vector3d &position_state,
