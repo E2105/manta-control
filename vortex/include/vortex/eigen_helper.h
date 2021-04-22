@@ -11,7 +11,7 @@
 
 // Return false if X has any nan or inf elements.
 template<typename Derived>
-inline bool isFucked(const Eigen::MatrixBase<Derived>& X)
+inline bool ValidValueCheck(const Eigen::MatrixBase<Derived>& X)
 {
   bool has_nan = !(X.array() == X.array()).all();
   bool has_inf = !((X - X).array() == (X - X).array()).all();
@@ -54,7 +54,7 @@ inline bool pseudoinverse(const Eigen::MatrixXd &X, Eigen::MatrixXd *X_pinv)
 {
   Eigen::MatrixXd copy = X.transpose() * (X * X.transpose()).inverse();
 
-  if (isFucked(copy))
+  if (ValidValueCheck(copy))
   {
     return false;
   }
