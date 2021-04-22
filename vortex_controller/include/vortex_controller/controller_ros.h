@@ -85,6 +85,8 @@ private:
                                   const Eigen::Vector6d &velocity_state,
                                   const Eigen::Vector3d &position_setpoint,
                                   const Eigen::Quaterniond &orientation_setpoint);
+  Eigen::Vector6d briefcaseMode(const Eigen::Quaterniond &orientation_state,
+                                const Eigen::Vector6d &velocity_state);
 };
 
 #endif  // VORTEX_CONTROLLER_CONTROLLER_ROS_H
