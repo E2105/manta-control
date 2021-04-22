@@ -14,8 +14,8 @@ Controller::Controller(ros::NodeHandle nh) : m_nh(nh), m_frequency(10)
   
   m_command_sub = m_nh.subscribe("joy/twist_motion", 1, &Controller::commandCallback, this);
   m_mode_sub    = m_nh.subscribe("joy/control_mode", 1, &Controller::modeCallback, this);
-
   m_state_sub   = m_nh.subscribe("estimator/state", 1, &Controller::stateCallback, this);
+
   m_wrench_pub  = m_nh.advertise<geometry_msgs::Wrench>("controller/forces", 1);
   m_mode_pub    = m_nh.advertise<std_msgs::String>("controller/mode", 10);
   m_debug_pub   = m_nh.advertise<vortex_msgs::Debug>("debug/controlstates", 10);
@@ -161,15 +161,19 @@ void Controller::spin()
 
     switch (m_control_mode)
     {
+      // Openloop: Only controlled by joystick
       case ControlModes::OPEN_LOOP:
       tau_command = tau_openloop;
       break;
+
+      // Keeps Roll and Pitch 0.
 
       case ControlModes::STAY_LEVEL:
       tau_staylevel = stayLevel(orientation_state, velocity_state);
       tau_command = tau_openloop + tau_staylevel;
       break;
 
+      // Keeps depth steady.
       case ControlModes::DEPTH_HOLD:
       tau_depthhold = depthHold(tau_openloop,
                                 position_state,
@@ -179,6 +183,7 @@ void Controller::spin()
       tau_command = tau_openloop + tau_depthhold;
       break;
 
+      // Keeps Yaw steady. 
       case ControlModes::HEADING_HOLD:
       tau_headinghold = headingHold(tau_openloop,
                                     position_state,
@@ -188,6 +193,7 @@ void Controller::spin()
       tau_command = tau_openloop + tau_headinghold;
       break;
 
+      // Keeps depth and yaw steady.
       case ControlModes::DEPTH_HEADING_HOLD:
       tau_depthhold = depthHold(tau_openloop,
                                 position_state,

@@ -1,7 +1,6 @@
 #ifndef VORTEX_EIGEN_HELPER_H
 #define VORTEX_EIGEN_HELPER_H
 
-#include "vortex_msgs/ThrusterForces.h"
 #include "ros/ros.h"
 #include <Eigen/Dense>
 
@@ -73,7 +72,7 @@ inline Eigen::Matrix3d skew(const Eigen::Vector3d &v)
   return S;
 }
 
-inline void arrayEigenToMsg(const Eigen::VectorXd &u, std_msgs::Float64MultiArray *msg)   // STANDRADIZATION
+inline void arrayEigenToMsg(const Eigen::VectorXd &u, std_msgs::Float64MultiArray *msg)
 {
   int r = u.size();
   std::vector<double> u_vec(r);

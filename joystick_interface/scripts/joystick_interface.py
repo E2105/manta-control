@@ -29,6 +29,9 @@ class JoystickInterfaceNode():
 
         # D-PAD
         self.pub_dpad = rospy.Publisher('joy/dpad', Int8MultiArray, queue_size=1)
+        
+        # MENU
+        self.pub_menu = rospy.Publisher('joy/menu_buttons', Int8MultiArray, queue_size=1)
 
 
         # Input Mapping
@@ -57,6 +60,7 @@ class JoystickInterfaceNode():
         twist = Twist()             # Motion
         bytez = ByteMultiArray()    # Modes
         dpad = Int8MultiArray()     # D-PAD
+        menu = Int8MultiArray()     # MENU
 
         # Dictionaries with button/axes names as keys
         twist_motion = {}
@@ -150,14 +154,24 @@ class JoystickInterfaceNode():
         # ---------
 
         dpad.data = [
-            twist_motion['dpad_horizontal'],
-            twist_motion['dpad_vertical']
+            int(twist_motion['dpad_horizontal']),
+            int(twist_motion['dpad_vertical'])
+        ]
+        
+        # The MENU BUTTONS
+        # ---------
+
+        menu.data = [
+            int(button_array['back']),
+            int(button_array['start']),
+            int(button_array['power'])
         ]
 
         # Publishing topics
         self.pub_motion.publish(twist)
         self.pub_mode.publish(bytez)
         self.pub_dpad.publish(dpad)
+        self.pub_menu.publish(menu)
 
 
 if __name__ == '__main__':

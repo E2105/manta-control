@@ -1,7 +1,7 @@
 try:
     import smbus
 except:
-    print 'Try sudo apt-get install python-smbus'
+    print('Try sudo apt-get install python-smbus')
 
 from time import sleep
 
@@ -18,7 +18,7 @@ OSR_4096 = 4
 OSR_8192 = 5
 
 # kg/m^3 convenience
-DENSITY_FRESHWATER = 997
+DENSITY_FRESHWATER = 1000
 DENSITY_SALTWATER = 1029
 
 # Conversion factors (from native unit, mbar)
@@ -65,7 +65,7 @@ class MS5837(object):
 
     def init(self):
         if self._bus is None:
-            "No bus!"
+            print("No bus!")
             return False
 
         self._bus.write_byte(self._MS5837_ADDR, self._MS5837_RESET)
@@ -83,18 +83,18 @@ class MS5837(object):
 
         crc = (self._C[0] & 0xF000) >> 12
         if crc != self._crc4(self._C):
-            print "PROM read error, CRC failed!"
+            print("PROM read error, CRC failed!")
             return False
 
         return True
 
     def read(self, oversampling=OSR_8192):
         if self._bus is None:
-            print "No bus!"
+            print("No bus!")
             return False
 
         if oversampling < OSR_256 or oversampling > OSR_8192:
-            print "Invalid oversampling option!"
+            print("Invalid oversampling option!")
             return False
 
         # Request D1 conversion (temperature)
@@ -123,8 +123,8 @@ class MS5837(object):
 
         return True
 
-    def setFluidDensity(self, denisty):
-        self._fluidDensity = denisty
+    def setFluidDensity(self, density):
+        self._fluidDensity = density
 
     # Pressure in requested units
     # mbar * conversion
@@ -141,10 +141,12 @@ class MS5837(object):
             return degC - 273
         return degC
     
-    #TODO: Blir beregnet i estimator. Vurder å fjerne en beregning.  
     # Depth relative to MSL pressure in given fluid density
-    def depth(self):
-        return (self.pressure(UNITS_Pa)-101300)/(self._fluidDensity*9.80665)
+    def depth(self, atm_pressure=101300, gravity=9.81):
+        """ Calculates the depth based on the measured pressure.
+        Modification: Calculates depth based on local atm. pressure and gravity.
+        """
+        return (self.pressure(UNITS_Pa)-atm_pressure)/(self._fluidDensity*gravity)
 
     # Altitude relative to MSL pressure
     def altitude(self):
@@ -181,8 +183,8 @@ class MS5837(object):
                 OFFi = (3*(self._temperature-2000)*(self._temperature-2000))/2
                 SENSi = (5*(self._temperature-2000)*(self._temperature-2000))/8
                 if (self._temperature/100) < -15: # Very low temp
-                    OFFi = OFFi+7*(self._temperature+1500l)*(self._temperature+1500)
-                    SENSi = SENSi+4*(self._temperature+1500l)*(self._temperature+1500)
+                    OFFi = OFFi+7*(self._temperature+1500)*(self._temperature+1500)
+                    SENSi = SENSi+4*(self._temperature+1500)*(self._temperature+1500)
             elif (self._temperature/100) >= 20: # High temp
                 Ti = 2*(dT*dT)/(137438953472)
                 OFFi = (1*(self._temperature-2000)*(self._temperature-2000))/16

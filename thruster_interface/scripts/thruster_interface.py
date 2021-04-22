@@ -63,14 +63,15 @@ class ThrusterInterface(object):
         microsecs = [None] * NUM_THRUSTERS
 
         for i in range(NUM_THRUSTERS):
-            microsecs[i] = self.thrust_to_microsecs(thrust[i] + THRUST_OFFSET[i])
+            microsecs[i] = int(self.thrust_to_microsecs(thrust[i] + THRUST_OFFSET[i]))
             pwm_values.data.append(microsecs[i])
             
         self.pub_pwm.publish(pwm_values)
 
 
     def output_to_zero(self):
-        # Publishes a stop signal to all thrusters
+        """ Sets all thruster PWM values to 1500 us.
+        """
         neutral_pwm = self.thrust_to_microsecs(0)
         pwm_values = UInt16MultiArray()
 
@@ -83,7 +84,7 @@ class ThrusterInterface(object):
     def thrust_to_microsecs(self, thrust):
         # Converts wanted thrust to PWM by interpolating two parameter lists
         # Output: 1100 - 1900 microseconds
-        return np.interp(thrust, LOOKUP_THRUST, LOOKUP_PULSE_WIDTH)
+        return int(np.interp(thrust, LOOKUP_THRUST, LOOKUP_PULSE_WIDTH))
 
 
     def healthy_message(self, msg):

@@ -9,28 +9,32 @@
 #include "vortex/eigen_typedefs.h"
 #include "vortex/eigen_helper.h"
 
+
 Allocator::Allocator(ros::NodeHandle nh)
   :
   m_nh(nh),
   m_min_thrust(-std::numeric_limits<double>::infinity()),
   m_max_thrust(std::numeric_limits<double>::infinity())
 {
+  // Initiating topics
   m_sub = m_nh.subscribe("controller/forces", 1, &Allocator::callback, this);
   m_pub = m_nh.advertise<std_msgs::Float64MultiArray>("thruster_forces", 1);
 
+  // General parameters
   if (!m_nh.getParam("/propulsion/dofs/num", m_num_degrees_of_freedom))
-    ROS_FATAL("Failed to read parameter number of dofs.");
+    ROS_FATAL("Failed to read parameter number of DOFs.");
   if (!m_nh.getParam("/propulsion/thrusters/num", m_num_thrusters))
     ROS_FATAL("Failed to read parameter number of thrusters.");
   if (!m_nh.getParam("/propulsion/dofs/which", m_active_degrees_of_freedom))
-    ROS_FATAL("Failed to read parameter which dofs.");
+    ROS_FATAL("Failed to read parameter which DOFs.");
   if (!m_nh.getParam("/propulsion/thrusters/direction", m_direction))
   {
     ROS_WARN("Failed to read parameter thruster direction.");
     std::fill(m_direction.begin(), m_direction.begin() + m_num_thrusters, 1);
   }
 
-  // Read thrust limits
+  // Parameter: Thruster forces
+  //    Thrust values sourced from vendors website
   std::vector<double> thrust;
   if (!m_nh.getParam("/thrusters/characteristics/thrust", thrust))
   {
@@ -38,13 +42,16 @@ Allocator::Allocator(ros::NodeHandle nh)
       m_min_thrust, m_max_thrust);
   }
 
-  // Read thrust config matrix
+  // Parameter: Thruster Allocation Matrix
+  //    A matrix describing the direction of forces from all of the actuators
+
   Eigen::MatrixXd thrust_configuration;
   if (!getMatrixParam(m_nh, "propulsion/thrusters/configuration_matrix", &thrust_configuration))
   {
     ROS_FATAL("Failed to read parameter thrust config matrix. Killing node...");
     ros::shutdown();
   }
+
   Eigen::MatrixXd thrust_configuration_pseudoinverse;
   if (!pseudoinverse(thrust_configuration, &thrust_configuration_pseudoinverse))
   {
@@ -56,18 +63,23 @@ Allocator::Allocator(ros::NodeHandle nh)
   ROS_INFO("Initialized.");
 }
 
+
 void Allocator::callback(const geometry_msgs::Wrench &msg_in) const
 {
+  // Wrench forces to ROV forces vector
   const Eigen::VectorXd rov_forces = rovForcesMsgToEigen(msg_in);
 
+  // Check for invalid force values
   if (!healthyWrench(rov_forces))
   {
     ROS_ERROR("ROV forces vector invalid, ignoring.");
     return;
   }
 
+  // Calculated the forces for each thruster
   Eigen::VectorXd thruster_forces = m_pseudoinverse_allocator->compute(rov_forces);
 
+  // Check for invalid thruster force values
   if (isFucked(thruster_forces))
   {
     ROS_ERROR("Thruster forces vector invalid, ignoring.");
@@ -80,15 +92,20 @@ void Allocator::callback(const geometry_msgs::Wrench &msg_in) const
   std_msgs::Float64MultiArray msg_out;
   arrayEigenToMsg(thruster_forces, &msg_out);
 
+  // Determines direction of thrusters from parameter files
   for (int i = 0; i < m_num_thrusters; i++)
     msg_out.data[i] *= m_direction[i];    
 
+  // Publish the forces
   m_pub.publish(msg_out);
 }
 
 
 Eigen::VectorXd Allocator::rovForcesMsgToEigen(const geometry_msgs::Wrench &msg) const
 {
+  // The ROV forces are represented in a Wrench message coming from the controller,
+  // and gathered in a single vector as long as the amount of DOFs.
+
   Eigen::VectorXd rov_forces(m_num_degrees_of_freedom);
   unsigned i = 0;
   if (m_active_degrees_of_freedom.at("surge"))
@@ -104,6 +121,7 @@ Eigen::VectorXd Allocator::rovForcesMsgToEigen(const geometry_msgs::Wrench &msg)
   if (m_active_degrees_of_freedom.at("yaw"))
     rov_forces(i++) = msg.torque.z;
 
+  // Returns no forces if invalid
   if (i != m_num_degrees_of_freedom)
   {
     ROS_WARN_STREAM("Invalid length of rov_forces vector. Is " << i << ", should be " << m_num_degrees_of_freedom <<

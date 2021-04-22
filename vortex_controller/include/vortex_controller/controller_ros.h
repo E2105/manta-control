@@ -28,14 +28,14 @@ class Controller
 public:
   explicit Controller(ros::NodeHandle nh);
   void commandCallback(const geometry_msgs::Twist &msg);
-  void modeCallback(const std_msgs::ByteMultiArray &msg); // NEW FOR BYTE MODE ARRAY
-  void stateCallback(const nav_msgs::Odometry &msg);      // standardized
+  void modeCallback(const std_msgs::ByteMultiArray &msg);
+  void stateCallback(const nav_msgs::Odometry &msg);
   void configCallback(const vortex_controller::VortexControllerConfig& config, uint32_t level);
   void spin();
 private:
   ros::NodeHandle m_nh;
   ros::Subscriber m_command_sub;
-  ros::Subscriber m_mode_sub;        // STANDARDIZATION
+  ros::Subscriber m_mode_sub;
   ros::Subscriber m_state_sub;
   ros::Publisher  m_wrench_pub;
   ros::Publisher  m_mode_pub;
@@ -55,13 +55,13 @@ private:
   std::unique_ptr<Setpoints>              m_setpoints;
   std::unique_ptr<QuaternionPdController> m_controller;
 
-  ControlMode getControlMode(const std_msgs::ByteMultiArray &msg) const;            // STANDARDIZATION
+  ControlMode getControlMode(const std_msgs::ByteMultiArray &msg) const;
   void initSetpoints();
   void resetSetpoints();
   void updateSetpoint(PoseIndex axis);
   void initPositionHoldController();
   bool healthyMotionMessage(const geometry_msgs::Twist &msg);
-  bool healthyModeMessage(const std_msgs::ByteMultiArray &msg); // STANDARDIZATION
+  bool healthyModeMessage(const std_msgs::ByteMultiArray &msg);
   void publishControlMode();
   void publishDebugMsg(const Eigen::Vector3d    &position_state,
                        const Eigen::Quaterniond &orientation_state,

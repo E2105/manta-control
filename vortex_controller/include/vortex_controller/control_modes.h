@@ -14,8 +14,10 @@ enum ControlMode
   FEEDBACK_CONTROL    = 5, // Added for semi autonomy. Funker kanskje ikke. Sjekk
   BRIEFCASE_MODE      = 6,
   CONTROL_MODE_END    = 7
+
 };
-}  // namespace ControlModes
+}
+
 typedef ControlModes::ControlMode ControlMode;
 
 inline std::string controlModeString(ControlMode control_mode)
