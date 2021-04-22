@@ -134,6 +134,7 @@ void Controller::spin()
   Eigen::Vector6d    tau_depthhold        = Eigen::VectorXd::Zero(6);
   Eigen::Vector6d    tau_headinghold      = Eigen::VectorXd::Zero(6);
   Eigen::Vector6d    tau_feedbackcontrol  = Eigen::VectorXd::Zero(6);   // Added for semi-autono
+  Eigen::Vector6d    tau_briefcasemode    = Eigen::VectorXd::Zero(6);
 
   Eigen::Vector3d    position_state       = Eigen::Vector3d::Zero();
   Eigen::Quaterniond orientation_state    = Eigen::Quaterniond::Identity();
