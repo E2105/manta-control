@@ -1,5 +1,4 @@
-#ifndef VORTEX_CONTROLLER_CONTROL_MODES_H
-#define VORTEX_CONTROLLER_CONTROL_MODES_H
+#pragma once
 
 #include <string>
 
@@ -11,9 +10,11 @@ enum ControlMode
   DEPTH_HOLD          = 1,
   HEADING_HOLD        = 2,
   DEPTH_HEADING_HOLD  = 3,
-  OPEN_LOOP_RESTORING = 4,
-  STAY_LEVEL          = 5,
-  CONTROL_MODE_END    = 4   // Changed to 4 from 6. It is an independant variable determining the amount of control modes comming in. Take out of array?
+  STAY_LEVEL          = 4,
+  FEEDBACK_CONTROL    = 5, // Added for semi autonomy. Funker kanskje ikke. Sjekk
+  BRIEFCASE_MODE      = 6,
+  CONTROL_MODE_END    = 7
+
 };
 }
 
@@ -40,12 +41,16 @@ inline std::string controlModeString(ControlMode control_mode)
     s = "DEPTH HEADING HOLD";
     break;
 
-    case ControlModes::OPEN_LOOP_RESTORING:
-    s = "OPEN LOOP RESTORING";
-    break;
-
     case ControlModes::STAY_LEVEL:
     s = "STAY LEVEL";
+    break;
+      
+    case ControlModes::FEEDBACK_CONTROL:    // Added for semi autonomy
+    s = "COMPLETE FEEBACK CONTROL";
+    break;
+      
+    case ControlModes::BRIEFCASE_MODE:
+    s = "BRIEFCASE MODE";
     break;
 
     default:
@@ -54,5 +59,3 @@ inline std::string controlModeString(ControlMode control_mode)
   }
   return s;
 }
-
-#endif  // VORTEX_CONTROLLER_CONTROL_MODES_H

@@ -121,8 +121,8 @@ void Controller::stateCallback(const nav_msgs::Odometry &msg)
 void Controller::configCallback(const vortex_controller::VortexControllerConfig &config, uint32_t level)
 {
   ROS_INFO_STREAM("Setting gains: [vel = " << config.velocity_gain << ", pos = " << config.position_gain
-    << ", rot = " << config.attitude_gain << "]");
-  m_controller->setGains(config.velocity_gain, config.position_gain, config.attitude_gain);
+    << ", rot = " << config.attitude_gain << ", int = " << config.integral_gain <<"]");
+  m_controller->setGains(config.velocity_gain, config.position_gain, config.attitude_gain, config.integral_gain);
 }
 
 void Controller::spin()
@@ -133,6 +133,7 @@ void Controller::spin()
   Eigen::Vector6d    tau_staylevel        = Eigen::VectorXd::Zero(6);
   Eigen::Vector6d    tau_depthhold        = Eigen::VectorXd::Zero(6);
   Eigen::Vector6d    tau_headinghold      = Eigen::VectorXd::Zero(6);
+  Eigen::Vector6d    tau_feedbackcontrol  = Eigen::VectorXd::Zero(6);   // Added for semi-autono
 
   Eigen::Vector3d    position_state       = Eigen::Vector3d::Zero();
   Eigen::Quaterniond orientation_state    = Eigen::Quaterniond::Identity();
@@ -164,14 +165,9 @@ void Controller::spin()
       case ControlModes::OPEN_LOOP:
       tau_command = tau_openloop;
       break;
-        
-      // Restoring force: 
-      case ControlModes::OPEN_LOOP_RESTORING:
-      tau_restoring = m_controller->getRestoring(orientation_state);
-      tau_command = tau_openloop + tau_restoring;
-      break;
 
       // Keeps Roll and Pitch 0.
+
       case ControlModes::STAY_LEVEL:
       tau_staylevel = stayLevel(orientation_state, velocity_state);
       tau_command = tau_openloop + tau_staylevel;
@@ -211,7 +207,21 @@ void Controller::spin()
                                     orientation_setpoint);
       tau_command = tau_openloop + tau_depthhold + tau_headinghold;
       break;
-
+        
+      case ControlModes::FEEDBACK_CONTROL:      // Added for semi-autonomy
+      tau_feedbackcontrol = feedbackControl(position_state,
+                                            orientation_state,
+                                            velocity_state,
+                                            position_setpoint,
+                                            orientation_setpoint);
+      tau_command = tau_feedbackcontrol;
+      break;
+        
+      case ControlModes::BRIEFCASE_MODE:
+      tau_briefcasemode = briefcaseMode(orientation_state, velocity_state);
+      tau_command = tau_openloop + tau_briefcasemode;
+      break;
+      
       default:
       ROS_ERROR("Default control mode reached.");
       break;
@@ -249,7 +259,7 @@ void Controller::resetSetpoints()
   m_setpoints->set(position, orientation);
 }
 
-void Controller::updateSetpoint(PoseIndex axis)
+void Controller::updateSetpoint(PoseIndex axis)   // Only updates z axis and around z axis. Maybe add more?
 {
   Eigen::Vector3d state;
   Eigen::Vector3d setpoint;
@@ -288,13 +298,15 @@ void Controller::updateSetpoint(PoseIndex axis)
 void Controller::initPositionHoldController()
 {
   // Read controller gains from parameter server
-  double a, b, c;
+  double a, b, c, i;
   if (!m_nh.getParam("/controller/velocity_gain", a))
     ROS_ERROR("Failed to read parameter velocity_gain.");
   if (!m_nh.getParam("/controller/position_gain", b))
     ROS_ERROR("Failed to read parameter position_gain.");
   if (!m_nh.getParam("/controller/attitude_gain", c))
     ROS_ERROR("Failed to read parameter attitude_gain.");
+  if (!m_nh.getParam("/controller/integral_gain", i))
+    ROS_ERROR("Failed to read parameter integral_gain.");
 
   // Read center of gravity and buoyancy vectors
   std::vector<double> r_G_vec, r_B_vec;
@@ -318,7 +330,8 @@ void Controller::initPositionHoldController()
   double W = mass * acceleration_of_gravity;
   double B = density_of_water * displacement * acceleration_of_gravity;
 
-  m_controller.reset(new QuaternionPdController(a, b, c, W, B, r_G, r_B));
+  //makes quaternionPdController
+  m_controller.reset(new QuaternionPdController(a, b, c, i, W, B, r_G, r_B));
 }
 
 bool Controller::healthyMotionMessage(const geometry_msgs::Twist& msg)
@@ -365,7 +378,7 @@ bool Controller::healthyMotionMessage(const geometry_msgs::Twist& msg)
 bool Controller::healthyModeMessage(const std_msgs::ByteMultiArray& msg)
 {
   // Check correct length of control mode vector
-  //  The array length is currently set to 4, was previously 6
+  //  The array length is currently set to 7, was previously 6. 
 
   if (msg.data.size() != ControlModes::CONTROL_MODE_END)
   {
@@ -455,6 +468,35 @@ Eigen::Vector6d Controller::stayLevel(const Eigen::Quaterniond &orientation_stat
   return tau;
 }
 
+Eigen::Vector6d Controller::briefcaseMode(const Eigen::Quaterniond &orientation_state,
+                                          const Eigen::Vector6d &velocity_state)
+{
+  // Convert quaternion setpoint to euler angles (ZYX convention)
+  Eigen::Vector3d euler;
+  euler = orientation_state.toRotationMatrix().eulerAngles(2, 1, 0);
+
+  // Set pitch and roll setpoints to zero
+  euler(EULER_PITCH) = 0;
+  euler(EULER_ROLL)  = 1.57;
+
+  // Convert euler setpoint back to quaternions
+  Eigen::Matrix3d R;
+  R = Eigen::AngleAxisd(euler(EULER_YAW),   Eigen::Vector3d::UnitZ())
+    * Eigen::AngleAxisd(euler(EULER_PITCH), Eigen::Vector3d::UnitY())
+    * Eigen::AngleAxisd(euler(EULER_ROLL),  Eigen::Vector3d::UnitX());
+  Eigen::Quaterniond orientation_briefcase(R);
+
+  Eigen::Vector6d tau = m_controller->getFeedback(Eigen::Vector3d::Zero(), orientation_state, velocity_state,
+                                                Eigen::Vector3d::Zero(), orientation_briefcase);
+
+  tau(ROLL)  = 0;
+  tau(PITCH) = 0;
+
+  return tau;
+}
+
+
+
 Eigen::Vector6d Controller::depthHold(const Eigen::Vector6d &tau_openloop,
                                       const Eigen::Vector3d &position_state,
                                       const Eigen::Quaterniond &orientation_state,
@@ -512,5 +554,20 @@ Eigen::Vector6d Controller::headingHold(const Eigen::Vector6d &tau_openloop,
     tau.setZero();
   }
 
+  return tau;
+}
+
+Eigen::Vector6d Controller::feedbackControl(const Eigen::Vector3d &position_state,
+                                            const Eigen::Quaterniond &orientation_state,
+                                            const Eigen::Vector6d &velocity_state,
+                                            const Eigen::Vector3d &position_setpoint,
+                                            const Eigen::Quaterniond &orientation_setpoint)
+{
+  Eigen::Vector6d tau;
+
+  tau = m_controller->getFeedback(position_state, orientation_state, velocity_state,
+                                  position_setpoint, orientation_setpoint);
+
+  }
   return tau;
 }
