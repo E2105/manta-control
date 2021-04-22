@@ -109,7 +109,7 @@ void Controller::stateCallback(const nav_msgs::Odometry &msg)
   tf::twistMsgToEigen(msg.twist.twist, velocity);
 
   bool orientation_invalid = (abs(orientation.norm() - 1) > c_max_quat_norm_deviation);
-  if (isFucked(position) || isFucked(velocity) || orientation_invalid)
+  if (ValidValueCheck(position) || ValidValueCheck(velocity) || orientation_invalid)
   {
     ROS_WARN_THROTTLE(1, "Invalid state estimate received, ignoring...");
     return;
