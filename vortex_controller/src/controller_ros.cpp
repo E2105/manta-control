@@ -165,11 +165,6 @@ void Controller::spin()
       tau_command = tau_openloop;
       break;
 
-      case ControlModes::OPEN_LOOP_RESTORING:
-      tau_restoring = m_controller->getRestoring(orientation_state);
-      tau_command = tau_openloop + tau_restoring;
-      break;
-
       case ControlModes::STAY_LEVEL:
       tau_staylevel = stayLevel(orientation_state, velocity_state);
       tau_command = tau_openloop + tau_staylevel;
