@@ -80,7 +80,7 @@ void Allocator::callback(const geometry_msgs::Wrench &msg_in) const
   Eigen::VectorXd thruster_forces = m_pseudoinverse_allocator->compute(rov_forces);
 
   // Check for invalid thruster force values
-  if (isFucked(thruster_forces))
+  if (ValidValueCheck(thruster_forces))
   {
     ROS_ERROR("Thruster forces vector invalid, ignoring.");
     return;
@@ -136,7 +136,7 @@ Eigen::VectorXd Allocator::rovForcesMsgToEigen(const geometry_msgs::Wrench &msg)
 bool Allocator::healthyWrench(const Eigen::VectorXd &v) const
 {
   // Check for NaN/Inf
-  if (isFucked(v))
+  if (ValidValueCheck(v))
     return false;
 
   // Check reasonableness
