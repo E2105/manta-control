@@ -49,8 +49,7 @@ class JoystickInterfaceNode():
                          'RT',
                          'dpad_horizontal',
                          'dpad_vertical']
-        self.button = []
-        self.previous =[]
+        self.previous =[0 for i in range(3)]
         self.counter = 0
         
 
@@ -59,6 +58,7 @@ class JoystickInterfaceNode():
         # Instances of published classes
         twist = Twist()             # Motion
         bytez = ByteMultiArray()    # Modes
+        bytez = [0, 0, 0, 0, 0, 0, 0]
         dpad = Int8MultiArray()     # D-PAD
         menu = Int8MultiArray()     # MENU
 
@@ -92,52 +92,25 @@ class JoystickInterfaceNode():
         
         # -------------
 
-        if button_array['X'] == 1 and self.previous[0] == 0:
-            if self.button[0] = True:
-                self.button[0] = False
-            else:
-                self.button[0] = True
+        if button_array['X']
+            if self.previous[0] == 0:
+                if self.counter == 5 og self.counter == 6:
+                    self.counter = 0
+                else:
+                    self.counter += 1
         self.previous[0] = button_array['X']
         
-        if button_array['Y'] == 1 and self.previous[1] == 0:
-            if self.button[1] = True:
-                self.button[1] = False
-            else:
-                self.button[1] = True
+        if button_array['Y']
+            if self.previous[1] == 0:
+                if self.counter == 0 og self.counter == 6:
+                    self.counter = 5
+                else:
+                    self.counter += 1
         self.previous[1] = button_array['Y']
         
-        if button_array['A'] == 1 and self.previous[2] == 0:
-            if self.button[2] = True:
-                self.button[2] = False
-            else:
-                self.button[2] = True
-        self.previous[2] = button_array['A']
-        
-        if button_array['B'] == 1 and self.previous[3] == 0:
-            if self.button[3] = True:
-                self.button[3] = False
-            else:
-                self.button[3] = True
-        self.previous[3] = button_array['B']
-        
-        
-        
-        
-        if self.button[0]
-            if self.counter == 5 or self.counter == 6
-                self.counter = 0
-            else
-                self.counter += 1
-            
-        if self.button[1]
-            if self.counter == 0 or self.counter == 6
-                self.counter = 5
-            else
-                self.counter -= 1
-        
-        if self.button[2]
+        if button_array['A']:
             self.counter = 0
-        if self.button[3]
+        if button_array['B']:
             self.counter = 6
         
         for i in range(6):
