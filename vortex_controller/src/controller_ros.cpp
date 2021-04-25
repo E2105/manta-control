@@ -20,6 +20,8 @@ Controller::Controller(ros::NodeHandle nh) : m_nh(nh), m_frequency(10)
   m_mode_pub    = m_nh.advertise<std_msgs::String>("controller/mode", 10);
   m_debug_pub   = m_nh.advertise<vortex_msgs::Debug>("debug/controlstates", 10);
 
+  m_setpoint_service = m_nh.advertiseService(const Eigen::Vector3d&, const Eigen::Quaterniond&, &Controller::setSetpoint, this);
+  
   m_control_mode = ControlModes::OPEN_LOOP;
 
   if (!m_nh.getParam("/controller/frequency", m_frequency))
@@ -234,6 +236,21 @@ void Controller::spin()
     ros::spinOnce();
     rate.sleep();
   }
+}
+
+bool Controller::setSetpoint(setSetpoint::Request &pose)
+{
+  if ControlModes::FEEDBACK_CONTROL:
+  {
+    ROS_INFO("Requesting: Position= ")
+    m_setpoints->set(pose.position, pose.  orientation);
+    ROS_INFO("Setting setpoint.")
+  }
+  else:
+  {
+    ROS_INFO("Not in station keeping mode.")
+  }
+  return 1;
 }
 
 void Controller::initSetpoints()
