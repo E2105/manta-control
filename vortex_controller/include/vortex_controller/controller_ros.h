@@ -37,9 +37,13 @@ private:
   ros::Subscriber m_command_sub;
   ros::Subscriber m_mode_sub;
   ros::Subscriber m_state_sub;
+  
   ros::Publisher  m_wrench_pub;
   ros::Publisher  m_mode_pub;
   ros::Publisher  m_debug_pub;
+  
+  ros::ServiceServer m_setpoint_service;
+  
   dynamic_reconfigure::Server<vortex_controller::VortexControllerConfig> m_dr_srv;
 
   ControlMode m_control_mode;
@@ -56,6 +60,7 @@ private:
   std::unique_ptr<QuaternionPdController> m_controller;
 
   ControlMode getControlMode(const std_msgs::ByteMultiArray &msg) const;
+  bool setSetpoint();
   void initSetpoints();
   void resetSetpoints();
   void updateSetpoint(PoseIndex axis);
