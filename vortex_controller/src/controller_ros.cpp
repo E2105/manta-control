@@ -449,8 +449,10 @@ Eigen::Vector6d Controller::stayLevel(const Eigen::Quaterniond &orientation_stat
   Eigen::Vector6d tau = m_controller->getFeedback(Eigen::Vector3d::Zero(), orientation_state, velocity_state,
                                                 Eigen::Vector3d::Zero(), orientation_staylevel);
 
-  tau(ROLL)  = 0;
-  tau(PITCH) = 0;
+  tau(SURGE)  = 0;
+  tau(SWAY)   = 0;
+  tau(HEAVE)  = 0;
+  tau(YAW)    = 0;
 
   return tau;
 }
