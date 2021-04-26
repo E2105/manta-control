@@ -20,7 +20,7 @@ Controller::Controller(ros::NodeHandle nh) : m_nh(nh), m_frequency(10)
   m_mode_pub    = m_nh.advertise<std_msgs::String>("controller/mode", 10);
   m_debug_pub   = m_nh.advertise<vortex_msgs::Debug>("debug/controlstates", 10);
 
-  m_setpoint_service = m_nh.advertiseService(const Eigen::Vector3d&, const Eigen::Quaterniond&, &Controller::setSetpoint, this);
+  m_setpoint_service = m_nh.advertiseService(setpoint, &Controller::setSetpoint, this);
   
   m_control_mode = ControlModes::OPEN_LOOP;
 
