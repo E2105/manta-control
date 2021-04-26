@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   vortex
   vortex_msgs
   roslint
+  message_generation
 )
 
 find_package(Eigen3 REQUIRED)
@@ -41,6 +42,8 @@ include_directories(
   ${EIGEN_INCLUDE_DIRS}
   ${dynamic_reconfigure_PACKAGE_PATH}/cmake/cfgbuild.cmake
 )
+
+add_service_files(FILES setSetpoin.srv)
 
 add_executable(${PROJECT_NAME}_node
   src/controller_node.cpp
