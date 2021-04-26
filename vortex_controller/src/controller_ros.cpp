@@ -238,12 +238,12 @@ void Controller::spin()
   }
 }
 
-bool Controller::setSetpoint(setSetpoint::Request &pose)
+bool Controller::setSetpoint(setpoint::Request &pose)
 {
   if ControlModes::FEEDBACK_CONTROL:
   {
     ROS_INFO("Requesting: Position= ")
-    m_setpoints->set(pose.position, pose.  orientation);
+    m_setpoints->set(pose.position, pose.orientation);
     ROS_INFO("Setting setpoint.")
   }
   else:
