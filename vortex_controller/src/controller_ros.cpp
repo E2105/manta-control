@@ -20,7 +20,7 @@ Controller::Controller(ros::NodeHandle nh) : m_nh(nh), m_frequency(10)
   m_mode_pub    = m_nh.advertise<std_msgs::String>("controller/mode", 10);
   m_debug_pub   = m_nh.advertise<vortex_msgs::Debug>("debug/controlstates", 10);
 
-  m_setpoint_service = m_nh.advertiseService(setpoint, &Controller::setSetpoint, this);
+  m_setpoint_service = m_nh.advertiseService("set_setpoint", &Controller::setSetpoint); //Trenger ikke &Controller?
   
   m_control_mode = ControlModes::OPEN_LOOP;
 
@@ -242,7 +242,8 @@ bool Controller::setSetpoint(setpoint::Request &pose)
 {
   if ControlModes::FEEDBACK_CONTROL:
   {
-    ROS_INFO("Requesting: Position= ")
+    ROS_INFO("Requesting position: x=%df, y=%df, z=%df. Requesting orientation: w=%df, i=%df, j=%df, k=%df.", 
+              pose.position[0], pose.position[1], pose.position[2], pose.orientation[0], pose.orientation[1], pose.orientation[2], pose.orientation[3]);
     m_setpoints->set(pose.position, pose.orientation);
     ROS_INFO("Setting setpoint.")
   }
