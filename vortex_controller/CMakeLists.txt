@@ -43,7 +43,15 @@ include_directories(
   ${dynamic_reconfigure_PACKAGE_PATH}/cmake/cfgbuild.cmake
 )
 
-add_service_files(FILES setSetpoin.srv)
+add_service_files(
+  FILES
+  setpoint.srv
+)
+
+generate_messages(
+  DEPENDENCIES
+  Eigen3
+)
 
 add_executable(${PROJECT_NAME}_node
   src/controller_node.cpp
@@ -51,6 +59,7 @@ add_executable(${PROJECT_NAME}_node
   src/quaternion_pid_controller.cpp
   src/setpoints.cpp
   src/state.cpp
+  src/ros_service.cpp
 )
 
 set_target_properties(${PROJECT_NAME}_node PROPERTIES OUTPUT_NAME node PREFIX "")
@@ -63,6 +72,15 @@ add_dependencies(${PROJECT_NAME}_node
 target_link_libraries(${PROJECT_NAME}_node
   ${catkin_LIBRARIES}
 )
+
+add_executable(vortex_controller src/controller_ros.cpp)
+target_link_libraries(vortex_controller ${catkin_LIBRARIES})
+add_dependencies(vortex_controller vortex_controller_generate_messages_cpp)
+
+add_executable(setSetpoint src/ros_service.cpp)
+target_link_libraries(setSetpoint ${catkin_LIBRARIES})
+add_dependencies(setSetpoint vortex_controller_generate_messages_cpp)
+
 
 if(CATKIN_ENABLE_TESTING)
   find_package(rostest REQUIRED)
