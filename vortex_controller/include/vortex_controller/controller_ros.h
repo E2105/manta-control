@@ -20,6 +20,7 @@
 #include "vortex_controller/state.h"
 #include "vortex_controller/setpoints.h"
 #include "vortex_controller/quaternion_pid_controller.h"
+#include "vortex_controller/setpoint.h"
 
 
 
