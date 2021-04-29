@@ -52,11 +52,6 @@ Eigen::Vector6d QuaternionPdController::getFeedback(const Eigen::Vector3d    &x,
   
   //gain
   Eigen::Vector6d gain = -m_K_d*nu - K_p*z - integral + g;
-  //ROS_DEBUG("Gain: %f %f %f %f %f %f", gain(0), gain(1), gain(2), gain(3), gain(4), gain(5));
-  ROS_DEBUG("NU: %f %f %f %f %f %f", nu(0), nu(1), nu(2), nu(3), nu(4), nu(5));
-  ROS_DEBUG("ZETT: %f %f %f %f %f %f", z(0), z(1), z(2), z(3), z(4), z(5));
-  ROS_DEBUG("INTEGRAL: %f %f %f %f %f %f", integral(0), integral(1), integral(2), integral(3), integral(4), integral(5));
-  ROS_DEBUG("GGGGGGGG: %f %f %f %f %f %f", g(0), g(1), g(2), g(3), g(4), g(5));
 
   return (Eigen::Vector6d() << gain).finished();
 }

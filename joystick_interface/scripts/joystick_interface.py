@@ -49,7 +49,6 @@ class JoystickInterfaceNode():
                          'RT',
                          'dpad_horizontal',
                          'dpad_vertical']
-
         self.previous =[0 for i in range(3)]
         self.counter = 0
         

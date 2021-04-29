@@ -210,12 +210,13 @@ void Controller::spin()
       break;
         
       case ControlModes::FEEDBACK_CONTROL:      // Added for semi-autonomy
-      tau_feedbackcontrol = feedbackControl(position_state,
+      tau_feedbackcontrol = feedbackControl(tau_openloop,
+                                            position_state,
                                             orientation_state,
                                             velocity_state,
                                             position_setpoint,
                                             orientation_setpoint);
-      tau_command = tau_feedbackcontrol;
+      tau_command = tau_openloop + tau_feedbackcontrol;
       break;
         
       case ControlModes::BRIEFCASE_MODE:
@@ -560,7 +561,8 @@ Eigen::Vector6d Controller::headingHold(const Eigen::Vector6d &tau_openloop,
   return tau;
 }
 
-Eigen::Vector6d Controller::feedbackControl(const Eigen::Vector3d &position_state,
+Eigen::Vector6d Controller::feedbackControl(const Eigen::Vector6d &tau_openloop,
+                                            const Eigen::Vector3d &position_state,
                                             const Eigen::Quaterniond &orientation_state,
                                             const Eigen::Vector6d &velocity_state,
                                             const Eigen::Vector3d &position_setpoint,
@@ -568,8 +570,16 @@ Eigen::Vector6d Controller::feedbackControl(const Eigen::Vector3d &position_stat
 {
   Eigen::Vector6d tau;
 
-  tau = m_controller->getFeedback(position_state, orientation_state, velocity_state,
+  bool activate_feedback = fabs(tau_openloop()) < c_normalized_force_deadzone;
+  if (activate_feedback)
+  {
+    tau = m_controller->getFeedback(position_state, orientation_state, velocity_state,
                                   position_setpoint, orientation_setpoint);
-
+  }
+  else
+  {
+    updateSetpoint();
+    tau.setZero();
+  }
   return tau;
 }
