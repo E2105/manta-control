@@ -27,7 +27,7 @@ class SimpleEstimator
     ros::Subscriber m_imu_sub;
     ros::Subscriber m_depth_sub;
     ros::Subscriber m_location_sub;
-    ros::Subscribe  m_otter_location_sub;
+    ros::Subscriber m_otter_location_sub;
     ros::Publisher  m_state_pub;
 
     double rov_location_x;
