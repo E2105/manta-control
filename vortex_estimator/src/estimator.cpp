@@ -105,7 +105,7 @@ void SimpleEstimator::locationCallback(const vortex_msgs/Location &msg) // Locat
   rov_location_y = msg.rov.longitude;
 } 
 
-void SimpleEstimator::otterCallback(const vortex_msgs/Otter &msg)
+void SimpleEstimator::otterCallback(const vortex_msgs/Location &msg)
 {
   m_state.pose.pose.position.x = msg.latitude  - rov_location_x;
   m_state.pose.pose.position.y = msg.longitude - rov_location_y;
