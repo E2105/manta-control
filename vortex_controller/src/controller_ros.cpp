@@ -464,8 +464,10 @@ Eigen::Vector6d Controller::stayLevel(const Eigen::Quaterniond &orientation_stat
   Eigen::Vector6d tau = m_controller->getFeedback(Eigen::Vector3d::Zero(), orientation_state, velocity_state,
                                                 Eigen::Vector3d::Zero(), orientation_staylevel);
 
-  tau(ROLL)  = 0;
-  tau(PITCH) = 0;
+  tau(SURGE) = 0;
+  tau(SWAY)  = 0;
+  tau(HEAVE) = 0;
+  tau(YAW)   = 0;
 
   return tau;
 }
@@ -491,8 +493,10 @@ Eigen::Vector6d Controller::briefcaseMode(const Eigen::Quaterniond &orientation_
   Eigen::Vector6d tau = m_controller->getFeedback(Eigen::Vector3d::Zero(), orientation_state, velocity_state,
                                                 Eigen::Vector3d::Zero(), orientation_briefcase);
 
-  tau(ROLL)  = 0;
-  tau(PITCH) = 0;
+  tau(SURGE) = 0;
+  tau(SWAY)  = 0;
+  tau(HEAVE) = 0;
+  tau(YAW)   = 0;
 
   return tau;
 }
@@ -570,7 +574,13 @@ Eigen::Vector6d Controller::feedbackControl(const Eigen::Vector6d &tau_openloop,
 {
   Eigen::Vector6d tau;
 
-  bool activate_feedback = fabs(tau_openloop()) < c_normalized_force_deadzone;
+  bool activate_feedback = fabs(tau_openloop(PoseIndex::SURGE)) +
+                           fabs(tau_openloop(PoseIndex::SWAY)) +
+                           fabs(tau_openloop(PoseIndex::HEAVE)) +
+                           fabs(tau_openloop(PoseIndex::ROLL)) +
+                           fabs(tau_openloop(PoseIndex::PITCH)) +
+                           fabs(tau_openloop(PoseIndex::YAW)) 
+                           < c_normalized_force_deadzone;
   if (activate_feedback)
   {
     tau = m_controller->getFeedback(position_state, orientation_state, velocity_state,
@@ -578,7 +588,7 @@ Eigen::Vector6d Controller::feedbackControl(const Eigen::Vector6d &tau_openloop,
   }
   else
   {
-    updateSetpoint();
+    resetSetpoints();
     tau.setZero();
   }
   return tau;

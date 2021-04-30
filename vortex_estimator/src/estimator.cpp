@@ -11,7 +11,7 @@ SimpleEstimator::SimpleEstimator()
   m_depth_sub    = m_nh.subscribe("/sensors/depth", 1, &SimpleEstimator::pressureCallback, this);
   
   m_location_sub = m_nh.subscribe("/rov/location", 1, &SimpleEstimator::locationCallback, this);  // Location
-  m_otter_location_sub = m_nh.subscribe("/otter/location", 1 &SimpleEstimator::otterCallback, this);
+  m_otter_location_sub = m_nh.subscribe("/otter/location", 1, &SimpleEstimator::otterCallback, this);
   
   m_state_pub    = m_nh.advertise<nav_msgs::Odometry>("estimator/state", 1);
 
