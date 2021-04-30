@@ -19,8 +19,8 @@ class SimpleEstimator
     SimpleEstimator();
     void imuCallback(const sensor_msgs::Imu &msg);
     void pressureCallback(const std_msgs::Float64 &msg);
-    void locationCallback(const vortex_msgs/Location &msg);
-    void otterCallback(const vortex_msgs/Location &msg);
+    void locationCallback(const vortex_msgs::Location &msg);
+    void otterCallback(const vortex_msgs::Location &msg);
     void publish();
   private:
     ros::NodeHandle m_nh;
