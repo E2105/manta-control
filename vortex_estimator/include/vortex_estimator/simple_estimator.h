@@ -28,6 +28,9 @@ class SimpleEstimator
     ros::Subscriber m_location_sub;
     ros::Publisher  m_state_pub;
 
+    double rov_location_x;
+    double rov_location_y;
+    
     bool m_ned_frame = false;
     const double c_pi = 3.141592653589793;
 
