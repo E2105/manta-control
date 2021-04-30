@@ -11,6 +11,7 @@ SimpleEstimator::SimpleEstimator()
   m_depth_sub    = m_nh.subscribe("/sensors/depth", 1, &SimpleEstimator::pressureCallback, this);
   
   m_location_sub = m_nh.subscribe("/rov/location", 1, &SimpleEstimator::locationCallback, this);  // Location
+  m_otter_location_sub = m_nh.subscribe("/otter/location", 1 &SimpleEstimator::otterCallback, this);
   
   m_state_pub    = m_nh.advertise<nav_msgs::Odometry>("estimator/state", 1);
 
@@ -21,6 +22,10 @@ SimpleEstimator::SimpleEstimator()
   m_state.pose.pose.position.x = 0.0;
   m_state.pose.pose.position.y = 0.0;
   m_state.pose.pose.position.z = 1.0;
+  
+  // Initiate local variable for rov location
+  rov_location_x = 0.0;
+  rov_location_y = 0.0;
   
   // Initiating orientation pointing north
   m_state.pose.pose.orientation.w = 1.0;
@@ -96,7 +101,13 @@ void SimpleEstimator::pressureCallback(const std_msgs::Float64 &msg)
 void SimpleEstimator::locationCallback(const vortex_msgs/Location &msg) // Location
 {
   // Input from Otter, publish to Odometry
-  m_state.pose.pose.position.x = msg.rov.latitude - msg.nav.latitude;
-  m_state.pose.pose.position.y = msg.rov.longitude - mag.nav.longitude;
-  m_state_pub.publish(m_state);
+  rov_location_x = msg.rov.latitude;
+  rov_location_y = msg.rov.longitude;
 } 
+
+void SimpleEstimator::otterCallback(const vortex_msgs/Otter &msg)
+{
+  m_state.pose.pose.position.x = msg.latitude  - rov_location_x;
+  m_state.pose.pose.position.y = msg.longitude - rov_location_y;
+  m_state_pub.publish(m_state);
+}
