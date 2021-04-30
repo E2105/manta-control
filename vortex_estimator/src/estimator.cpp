@@ -98,14 +98,14 @@ void SimpleEstimator::pressureCallback(const std_msgs::Float64 &msg)
   m_state_pub.publish(m_state);
 }
 
-void SimpleEstimator::locationCallback(const vortex_msgs/Location &msg) // Location
+void SimpleEstimator::locationCallback(const vortex_msgs::Location &msg) // Location
 {
   // Input from Otter, publish to Odometry
   rov_location_x = msg.latitude;
   rov_location_y = msg.longitude;
 } 
 
-void SimpleEstimator::otterCallback(const vortex_msgs/Location &msg)
+void SimpleEstimator::otterCallback(const vortex_msgs::Location &msg)
 {
   m_state.pose.pose.position.x = msg.latitude  - rov_location_x;
   m_state.pose.pose.position.y = msg.longitude - rov_location_y;
