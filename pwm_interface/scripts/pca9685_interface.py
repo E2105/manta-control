@@ -89,8 +89,6 @@ class Pca9685InterfaceNode(object):
                 self.camera_pwm = 1000
             else:
                 self.camera_pwm -= 100
-                
-        print(self.camera_pwm)
 
         self.pca9685.set_pwm(self.cam_pin, PWM_ON, self.microsecs_to_bits(self.camera_pwm))
 

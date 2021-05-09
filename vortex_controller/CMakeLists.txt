@@ -44,8 +44,8 @@ include_directories(
 
 add_executable(${PROJECT_NAME}_node
   src/controller_node.cpp
-  src/controller_ros.cpp
-  src/quaternion_pd_controller.cpp
+  src/controller_ros.cpp                  
+  src/quaternion_pid_controller.cpp
   src/setpoints.cpp
   src/state.cpp
 )

@@ -8,6 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   roslint
   nav_msgs
+  vortex_msgs
 )
 
 find_package(Eigen3 REQUIRED)
@@ -22,6 +23,7 @@ catkin_package(
   eigen_conversions
   roscpp
   nav_msgs
+  vortex_msgs
 )
 
 include_directories(

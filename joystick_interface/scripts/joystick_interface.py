@@ -49,12 +49,16 @@ class JoystickInterfaceNode():
                          'RT',
                          'dpad_horizontal',
                          'dpad_vertical']
+        self.previous =[0 for i in range(3)]
+        self.counter = 0
+        
 
     def callback(self, msg):
         
         # Instances of published classes
         twist = Twist()             # Motion
         bytez = ByteMultiArray()    # Modes
+        bytez.data = [0,0,0,0,0,0,0]
         dpad = Int8MultiArray()     # D-PAD
         menu = Int8MultiArray()     # MENU
 
@@ -85,12 +89,38 @@ class JoystickInterfaceNode():
         # Control Modes
         # -------------
 
-        bytez.data = [
-            button_array['A'],
-            button_array['X'],
-            button_array['B'],
-            button_array['Y']
-        ]
+        
+        # -------------
+
+        
+        
+        
+        if button_array['X']:
+            if self.previous[0] == 0:
+                if self.counter == 5 or self.counter == 6:
+                    self.counter = 0
+                else:
+                    self.counter += 1
+        self.previous[0] = button_array['X']    
+
+        if button_array['Y']:
+            if self.previous[1] == 0:
+                if self.counter == 0 or self.counter == 6:
+                    self.counter = 5
+                else:
+                    self.counter -= 1
+        self.previous[1] = button_array['Y']            
+        
+        if button_array['A']:
+            self.counter = 0
+        if button_array['B']:
+            self.counter = 6
+        
+        for i in range(6):
+            if i == self.counter:
+                bytez.data[i] = 1
+            else:
+                bytez.data[i] = 0
 
         """
         bytez is not pushing boolean values that the controller EXPECTS, this needs to be done in the controller

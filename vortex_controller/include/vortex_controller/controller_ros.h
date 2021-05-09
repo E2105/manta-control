@@ -19,9 +19,9 @@
 #include "vortex_controller/control_modes.h"
 #include "vortex_controller/state.h"
 #include "vortex_controller/setpoints.h"
-#include "vortex_controller/quaternion_pd_controller.h"
+#include "vortex_controller/quaternion_pid_controller.h"
 
-
+#include <ros/console.h>
 
 class Controller
 {
@@ -80,6 +80,14 @@ private:
                               const Eigen::Quaterniond &orientation_state,
                               const Eigen::Vector6d &velocity_state,
                               const Eigen::Quaterniond &orientation_setpoint);
+  Eigen::Vector6d feedbackControl(const Eigen::Vector6d &tau_openloop,
+                                  const Eigen::Vector3d &position_state,          // Added for semi-autonomy
+                                  const Eigen::Quaterniond &orientation_state,
+                                  const Eigen::Vector6d &velocity_state,
+                                  const Eigen::Vector3d &position_setpoint,
+                                  const Eigen::Quaterniond &orientation_setpoint);
+  Eigen::Vector6d briefcaseMode(const Eigen::Quaterniond &orientation_state,
+                                const Eigen::Vector6d &velocity_state);
 };
 
 #endif  // VORTEX_CONTROLLER_CONTROLLER_ROS_H

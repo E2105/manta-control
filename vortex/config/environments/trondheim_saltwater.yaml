@@ -5,7 +5,7 @@
 # Gravity value from EGM2008 12th order via wolframalpha.com
 
 atmosphere:
-  pressure: 103900
+  pressure: 99900
 
 water:
   density: 1026
