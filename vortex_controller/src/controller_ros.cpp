@@ -543,12 +543,12 @@ Eigen::Vector6d Controller::headingHold(const Eigen::Vector6d &tau_openloop,
                                         const Eigen::Quaterniond &orientation_setpoint)
 {
   Eigen::Vector6d tau;
-
+  Eigen::Quaterniond setzero = (0,0,0,0);
   bool activate_headinghold = fabs(tau_openloop(PoseIndex::YAW)) < c_normalized_force_deadzone;
   if (activate_headinghold)
   {
     tau = m_controller->getFeedback(Eigen::Vector3d::Zero(), orientation_state, velocity_state,
-                                  Eigen::Vector3d::Zero(), orientation_setpoint);
+                                  Eigen::Vector3d::Zero(), setzero);
 
     // Allow only yaw feedback command
     tau(SURGE) = 0;
@@ -573,7 +573,7 @@ Eigen::Vector6d Controller::feedbackControl(const Eigen::Vector6d &tau_openloop,
                                             const Eigen::Vector3d &position_setpoint,
                                             const Eigen::Quaterniond &orientation_setpoint)
 {
-  Eigen::Vector6d tau;
+ /* Eigen::Vector6d tau;
 
   bool activate_feedback = fabs(tau_openloop(PoseIndex::SURGE)) +
                            fabs(tau_openloop(PoseIndex::SWAY)) +
@@ -590,6 +590,27 @@ Eigen::Vector6d Controller::feedbackControl(const Eigen::Vector6d &tau_openloop,
   else
   {
     resetSetpoints();
+    tau.setZero();
+  }
+  */
+  Eigen::Vector6d tau;
+  Eigen::Quaterniond setstep = (0.7071, 0, 0.7071, 0);
+  bool activate_headinghold = fabs(tau_openloop(PoseIndex::YAW)) < c_normalized_force_deadzone;
+  if (activate_headinghold)
+  {
+    tau = m_controller->getFeedback(Eigen::Vector3d::Zero(), orientation_state, velocity_state,
+                                  Eigen::Vector3d::Zero(), setstep);
+
+    // Allow only yaw feedback command
+    tau(SURGE) = 0;
+    tau(SWAY)  = 0;
+    tau(HEAVE) = 0;
+    tau(ROLL)  = 0;
+    tau(PITCH) = 0;
+  }
+  else
+  {
+    updateSetpoint(YAW);
     tau.setZero();
   }
   return tau;
