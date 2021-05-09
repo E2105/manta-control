@@ -6,7 +6,6 @@ Used with:
 * vortex_msgs
 * xsens_mti_driver
 * battery-monitor
-* obs_interface
 
 ## Background
 

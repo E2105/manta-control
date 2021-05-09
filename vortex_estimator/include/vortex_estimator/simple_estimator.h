@@ -10,7 +10,9 @@
 #include "sensor_msgs/Imu.h"
 #include "std_msgs/Float64.h"
 #include "nav_msgs/Odometry.h"
+
 #include "vortex_msgs/Location.h"
+
 #include <string>
 
 class SimpleEstimator
@@ -32,7 +34,7 @@ class SimpleEstimator
 
     double rov_location_x;
     double rov_location_y;
-    
+
     bool m_ned_frame = false;
     const double c_pi = 3.141592653589793;
 
